@@ -1,8 +1,10 @@
 from datetime import date
 from sqlalchemy import select
-from src.models.booking import BookingsOrm
+
+from src.models import BookingsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import BookingDataMapper
+
 
 class BookingsRepository(BaseRepository):
     model = BookingsOrm

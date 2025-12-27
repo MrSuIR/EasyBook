@@ -1,9 +1,9 @@
 from PIL import Image
 import os
 import asyncio
-from src.database import async_session_maker_null_pool
-from src.tasks.celery_app import celery_instance
-from src.utils.db_manager import DBManager
+from src import async_session_maker_null_pool
+from src import celery_instance
+from src import DBManager
 
 
 @celery_instance.task

@@ -1,8 +1,5 @@
-from src.models.booking import BookingsOrm
-from src.models.facilities import FacilitiesOrm, RoomsFacilitiesOrm
-from src.models.hotels import HotelsOrm
-from src.models.rooms import RoomsOrm
-from src.models.users import UsersOrm
+from src.models import HotelsOrm, RoomsOrm, UsersOrm, BookingsOrm, FacilitiesOrm
+from src.models.facilities import RoomsFacilitiesOrm
 from src.repositories.mappers.base import DataMapper
 from src.schemas.bookings import Booking
 from src.schemas.facilities import Facility, RoomFacility

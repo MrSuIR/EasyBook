@@ -1,10 +1,12 @@
 from datetime import date
-from src.models.hotels import HotelsOrm
-from src.models.rooms import RoomsOrm
-from src.repositories.base import BaseRepository
+
 from sqlalchemy import select
+
+from src.models import HotelsOrm, RoomsOrm
+from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import HotelDataMapper
 from src.repositories.utils import rooms_ids_for_booking
+
 
 class HotelsRepository(BaseRepository):
     model = HotelsOrm
