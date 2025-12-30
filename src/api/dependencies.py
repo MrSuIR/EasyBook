@@ -1,9 +1,11 @@
 from fastapi import Depends, Query, Request, HTTPException
 from typing import Annotated
 from pydantic import BaseModel
-from src import async_session_maker
-from src import AuthService
-from src import DBManager
+
+from src.database import async_session_maker
+from src.service.auth import AuthService
+from src.utils.db_manager import DBManager
+
 
 class PaginationParams(BaseModel):
     page: Annotated[int | None, Query(1, ge=1)]

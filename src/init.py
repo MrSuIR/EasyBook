@@ -1,5 +1,5 @@
-from src import RedisManager
-from src import settings
+from src.config import settings
+from src.connectors.redis_connector import RedisManager
 
 redis_manager = RedisManager(
     host=settings.REDIS_HOST,

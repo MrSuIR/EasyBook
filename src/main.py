@@ -5,14 +5,16 @@ import sys
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from pathlib import Path
+
+from src.init import redis_manager
+
 sys.path.append(str(Path(__file__).parent.parent))
-from src import redis_manager
-from src import router as router_hotels
-from src import router as router_auth
-from src import router as router_rooms
-from src import router as router_bookings
-from src import router as router_facilities
-from src import router as router_images
+from src.api.hotels import router as router_hotels
+from src.api.auth import router as router_auth
+from src.api.rooms import router as router_rooms
+from src.api.bookings import router as router_bookings
+from src.api.facilities import router as router_facilities
+from src.api.images import router as router_images
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):

@@ -1,8 +1,9 @@
 from datetime import date
 from fastapi import APIRouter
-from src import DBDep
-from src import RoomFacilityAdd
-from src import RoomAdd, RoomAddRequest, RoomPatchReqeust, RoomPatch
+
+from src.api.dependencies import DBDep
+from src.schemas.facilities import RoomFacilityAdd
+from src.schemas.rooms import RoomAddRequest, RoomAdd, RoomPatchReqeust, RoomPatch
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
 

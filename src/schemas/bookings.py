@@ -13,5 +13,13 @@ class BookingAdd(BaseModel):
     date_to: date
     price: int
 
+class BookingPatch(BaseModel):
+    room_id: int
+    user_id: int
+    date_from: date
+    date_to: date
+    price: int
+
+
 class Booking(BookingAdd):
     id: int
