@@ -8,15 +8,16 @@ from src.schemas.hotels import HotelAdd, HotelPATCH
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
+
 @router.get("")
 @cache(expire=10)
 async def get_hotels(
-        pagination: PaginationDep,
-        db: DBDep,
-        date_from: date,
-        date_to: date,
-        title: str | None = None,
-        location: str | None = None,
+    pagination: PaginationDep,
+    db: DBDep,
+    date_from: date,
+    date_to: date,
+    title: str | None = None,
+    location: str | None = None,
 ):
     return await db.hotels.get_filtered_by_time(
         date_from=date_from,
@@ -41,22 +42,14 @@ async def create_hotel(hotel_data: HotelAdd, db: DBDep):
 
 
 @router.put("/{hotel_id}")
-async def edit_hotels(
-        hotel_id: int,
-        hotel_data: HotelAdd,
-        db: DBDep
-):
+async def edit_hotels(hotel_id: int, hotel_data: HotelAdd, db: DBDep):
     await db.hotels.edit(data=hotel_data, id=hotel_id, exclude_unset=False)
     await db.commit()
     return {"status": "OK"}
 
 
 @router.patch("/{hotel_id}")
-async def partially_edit_hotels(
-        hotel_id: int,
-        hotel_data: HotelPATCH,
-        db: DBDep
-):
+async def partially_edit_hotels(hotel_id: int, hotel_data: HotelPATCH, db: DBDep):
     await db.hotels.edit(data=hotel_data, id=hotel_id, exclude_unset=True)
     await db.commit()
     return {"status": "OK"}

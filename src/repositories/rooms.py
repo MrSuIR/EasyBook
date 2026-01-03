@@ -14,7 +14,7 @@ class RoomsRepository(BaseRepository):
     mapper = RoomDataMapper
 
     async def get_filtered_by_time(self, date_from: date, date_to: date, hotel_id: int):
-        rooms_ids_to_get= rooms_ids_for_booking(date_from, date_to, hotel_id)
+        rooms_ids_to_get = rooms_ids_for_booking(date_from, date_to, hotel_id)
 
         query = (
             select(self.model)
@@ -23,8 +23,10 @@ class RoomsRepository(BaseRepository):
         )
 
         result = await self.session.execute(query)
-        return [RoomDataWithRelsMapper.map_to_domain_entity(model) for model in result.scalars().all()]
-
+        return [
+            RoomDataWithRelsMapper.map_to_domain_entity(model)
+            for model in result.scalars().all()
+        ]
 
     async def get_room_with_rels(self, room_id: int, hotel_id: int):
         query = (

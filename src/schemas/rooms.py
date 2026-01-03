@@ -41,4 +41,3 @@ class Room(RoomAdd):
 
 class RoomWithRels(Room):
     facilities: list[Facility]
-

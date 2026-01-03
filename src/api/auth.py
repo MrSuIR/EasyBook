@@ -1,12 +1,10 @@
 from fastapi import APIRouter, HTTPException, Response
-
 from src.api.dependencies import UserIdDep, DBDep
-from src.database import async_session_maker
-from src.repositories.users import UsersRepository
 from src.schemas.users import UserRequestAdd, UserAdd
 from src.service.auth import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
+
 
 @router.post("/register")
 async def register_user(db: DBDep, request_data: UserRequestAdd):
@@ -21,13 +19,11 @@ async def register_user(db: DBDep, request_data: UserRequestAdd):
 
 
 @router.post("/login")
-async def login_user(
-        db: DBDep,
-        request_data: UserRequestAdd,
-        response: Response
-):
+async def login_user(db: DBDep, request_data: UserRequestAdd, response: Response):
     user = await db.users.get_user_with_hashed_password(email=request_data.email)
-    if not user or not AuthService().verify_password(plain_password=request_data.password, hashed_password=user.hashed_password):
+    if not user or not AuthService().verify_password(
+        plain_password=request_data.password, hashed_password=user.hashed_password
+    ):
         raise HTTPException(status_code=401, detail="Неверный логин или пароль")
     access_token = AuthService().create_access_token({"user_id": user.id})
     response.set_cookie("access_token", access_token)
@@ -43,5 +39,3 @@ async def get_me(db: DBDep, user_id: UserIdDep):
 async def logout(response: Response):
     response.delete_cookie(key="access_token")
     return {"status": "OK"}
-
-

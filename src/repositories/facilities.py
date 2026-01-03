@@ -1,4 +1,3 @@
-
 from sqlalchemy import select, delete, insert
 
 from src.models import FacilitiesOrm
@@ -11,12 +10,15 @@ class FacilitiesRepository(BaseRepository):
     model = FacilitiesOrm
     mapper = FacilityDataMapper
 
+
 class RoomsFacilitiesRepository(BaseRepository):
     model = RoomsFacilitiesOrm
     mapper = RoomFacilityDataMapper
 
     async def set_room_facilities(self, facilities_ids: list[int], room_id: int):
-        current_ids_facilities_query = select(RoomsFacilitiesOrm.facility_id).filter_by(room_id=room_id)
+        current_ids_facilities_query = select(RoomsFacilitiesOrm.facility_id).filter_by(
+            room_id=room_id
+        )
         result = await self.session.execute(current_ids_facilities_query)
         current_facilities_ids = result.scalars().all()
 
@@ -24,19 +26,14 @@ class RoomsFacilitiesRepository(BaseRepository):
         ids_to_insert = list(set(facilities_ids) - set(current_facilities_ids))
 
         if ids_to_delete:
-            ids_to_delete_stmt = (
-                delete(RoomsFacilitiesOrm)
-                .filter(
-                    RoomsFacilitiesOrm.room_id == room_id,
-                    RoomsFacilitiesOrm.facility_id.in_(ids_to_delete)
-                )
+            ids_to_delete_stmt = delete(RoomsFacilitiesOrm).filter(
+                RoomsFacilitiesOrm.room_id == room_id,
+                RoomsFacilitiesOrm.facility_id.in_(ids_to_delete),
             )
             await self.session.execute(ids_to_delete_stmt)
 
         if ids_to_insert:
-            ids_to_insert_stmt = (
-                insert(RoomsFacilitiesOrm)
-                .values([{"room_id": room_id, "facility_id": f_id} for f_id in ids_to_insert])
+            ids_to_insert_stmt = insert(RoomsFacilitiesOrm).values(
+                [{"room_id": room_id, "facility_id": f_id} for f_id in ids_to_insert]
             )
             await self.session.execute(ids_to_insert_stmt)
-

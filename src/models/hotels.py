@@ -2,6 +2,7 @@ from src.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String
 
+
 class HotelsOrm(Base):
     __tablename__ = "hotels"
 

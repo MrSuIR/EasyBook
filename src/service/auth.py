@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from src.config import settings
 
+
 class AuthService:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -12,9 +13,13 @@ class AuthService:
 
     def create_access_token(self, data: dict):
         to_encode = data.copy()
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+        encoded_jwt = jwt.encode(
+            to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+        )
         return encoded_jwt
 
     def hashed_password(self, password: str):
@@ -22,6 +27,8 @@ class AuthService:
 
     def decode_token(self, token: str):
         try:
-            return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+            return jwt.decode(
+                token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+            )
         except jwt.exceptions.DecodeError:
             raise HTTPException(status_code=401, detail="Неверный токен")

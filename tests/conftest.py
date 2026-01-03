@@ -1,16 +1,18 @@
 import json
-from unittest import mock
-mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 import pytest
-from src.api.dependencies import get_db
-from src.config import settings
-from src.main import app
-from src.models import *
-from httpx import AsyncClient, ASGITransport
-from src.database import Base, engine, async_session_maker_null_pool
-from src.schemas.hotels import HotelAdd
-from src.schemas.rooms import RoomAdd
-from src.utils.db_manager import DBManager
+from unittest import mock
+
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
+from src.api.dependencies import get_db  # noqa
+from src.config import settings  # noqa
+from src.main import app  # noqa
+from src.models import *  # noqa
+from httpx import AsyncClient, ASGITransport  # noqa
+from src.database import Base, engine, async_session_maker_null_pool  # noqa
+from src.schemas.hotels import HotelAdd  # noqa
+from src.schemas.rooms import RoomAdd  # noqa
+from src.utils.db_manager import DBManager  # noqa
+
 
 @pytest.fixture(scope="function")
 async def db():
@@ -21,6 +23,7 @@ async def db():
 async def get_db_null_pool():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
+
 
 app.dependency_overrides[get_db] = get_db_null_pool
 
@@ -48,23 +51,19 @@ async def setup_database():
 
 @pytest.fixture(scope="session")
 async def ac():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
 
 
-@pytest.fixture(scope="session" ,autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 async def register_user(ac, setup_database):
-    await ac.post(
-        "/auth/register",
-        json={"email": "email@mail.ru", "password": "1234"}
-    )
+    await ac.post("/auth/register", json={"email": "email@mail.ru", "password": "1234"})
 
 
 @pytest.fixture(scope="session")
 async def authenticated_ac(register_user, ac):
-    response = await ac.post(
-        "/auth/login",
-        json={"email": "email@mail.ru", "password": "1234"}
-    )
+    await ac.post("/auth/login", json={"email": "email@mail.ru", "password": "1234"})
     assert ac.cookies["access_token"]
     yield ac

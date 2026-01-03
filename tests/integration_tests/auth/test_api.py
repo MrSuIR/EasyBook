@@ -1,16 +1,19 @@
 import pytest
 from src.service.auth import AuthService
 
-@pytest.mark.parametrize("email, password, status_code", [
-    ("user@mail.ru", "12345", 200),
-    ("user@mail.ru", "12345", 400),
-    ("userail.ru", "12345", 422),
-    ("user123@mail.ru", "12345", 200),
-])
+
+@pytest.mark.parametrize(
+    "email, password, status_code",
+    [
+        ("user@mail.ru", "12345", 200),
+        ("user@mail.ru", "12345", 400),
+        ("userail.ru", "12345", 422),
+        ("user123@mail.ru", "12345", 200),
+    ],
+)
 async def test_auth_flow(email: str, password: str, status_code, ac, db):
     register_response = await ac.post(
-        "/auth/register",
-        json={"email": email, "password": password}
+        "/auth/register", json={"email": email, "password": password}
     )
     assert register_response.status_code == status_code
     if status_code != 200:
@@ -21,8 +24,7 @@ async def test_auth_flow(email: str, password: str, status_code, ac, db):
     assert user.email == email
 
     login_response = await ac.post(
-        "/auth/login",
-        json={"email": email, "password": password}
+        "/auth/login", json={"email": email, "password": password}
     )
     assert login_response.status_code == status_code
     if status_code != 200:

@@ -5,6 +5,7 @@ from src.schemas.bookings import BookingAddRequest, BookingAdd
 
 router = APIRouter(prefix="/bookings", tags=["Бронирования"])
 
+
 @router.get("")
 async def get_bookings(db: DBDep):
     return await db.bookings.get_all()
@@ -17,9 +18,7 @@ async def get_my_bookings(db: DBDep, user_id: UserIdDep):
 
 @router.post("")
 async def create_booking(
-        booking_data: BookingAddRequest,
-        db: DBDep,
-        user_id: UserIdDep
+    booking_data: BookingAddRequest, db: DBDep, user_id: UserIdDep
 ):
     room = await db.rooms.get_one_or_none(id=booking_data.room_id)
     room_price = room.price
