@@ -17,9 +17,7 @@ async def get_my_bookings(db: DBDep, user_id: UserIdDep):
 
 
 @router.post("")
-async def create_booking(
-    booking_data: BookingAddRequest, db: DBDep, user_id: UserIdDep
-):
+async def create_booking(booking_data: BookingAddRequest, db: DBDep, user_id: UserIdDep):
     room = await db.rooms.get_one_or_none(id=booking_data.room_id)
     room_price = room.price
     data = BookingAdd(price=room_price, **booking_data.model_dump(), user_id=user_id)

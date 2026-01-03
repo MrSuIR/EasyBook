@@ -12,9 +12,7 @@ from src.service.auth import AuthService
     ],
 )
 async def test_auth_flow(email: str, password: str, status_code, ac, db):
-    register_response = await ac.post(
-        "/auth/register", json={"email": email, "password": password}
-    )
+    register_response = await ac.post("/auth/register", json={"email": email, "password": password})
     assert register_response.status_code == status_code
     if status_code != 200:
         return None
@@ -23,9 +21,7 @@ async def test_auth_flow(email: str, password: str, status_code, ac, db):
     assert user
     assert user.email == email
 
-    login_response = await ac.post(
-        "/auth/login", json={"email": email, "password": password}
-    )
+    login_response = await ac.post("/auth/login", json={"email": email, "password": password})
     assert login_response.status_code == status_code
     if status_code != 200:
         return None

@@ -14,9 +14,7 @@ from src.utils.db_manager import DBManager
         (1, "2025-12-12", "2025-12-16", 500),
     ],
 )
-async def test_add_booking(
-    room_id, date_from, date_to, status_code, db, authenticated_ac
-):
+async def test_add_booking(room_id, date_from, date_to, status_code, db, authenticated_ac):
     response = await authenticated_ac.post(
         "/bookings",
         json={
