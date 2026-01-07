@@ -11,7 +11,7 @@ from src.utils.db_manager import DBManager
         (1, "2025-12-12", "2025-12-16", 200),
         (1, "2025-12-12", "2025-12-16", 200),
         (1, "2025-12-12", "2025-12-16", 200),
-        (1, "2025-12-12", "2025-12-16", 500),
+        (1, "2025-12-12", "2025-12-16", 409),
     ],
 )
 async def test_add_booking(room_id, date_from, date_to, status_code, db, authenticated_ac):

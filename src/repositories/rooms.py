@@ -1,8 +1,10 @@
 from datetime import date
 
 from sqlalchemy import select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
 
+from src.exceptions import ObjectNotFoundException
 from src.models import RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import RoomDataMapper, RoomDataWithRelsMapper
@@ -34,7 +36,8 @@ class RoomsRepository(BaseRepository):
             .where(RoomsOrm.id == room_id, RoomsOrm.hotel_id == hotel_id)
         )
         result = await self.session.execute(query)
-        model = result.scalars().one_or_none()
-        if model is None:
-            return None
+        try:
+            model = result.scalars().one()
+        except NoResultFound:
+            raise ObjectNotFoundException
         return RoomDataWithRelsMapper.map_to_domain_entity(model)

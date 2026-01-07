@@ -10,6 +10,6 @@ class Hotel(HotelAdd):
     id: int
 
 
-class HotelPATCH(BaseModel):
+class HotelPatch(BaseModel):
     title: str | None = None
     location: str | None = None

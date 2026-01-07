@@ -1,9 +1,14 @@
 from datetime import date
 from sqlalchemy import select, func
+
+from src.exceptions import DateValuesException
 from src.models import BookingsOrm, RoomsOrm
 
 
 def rooms_ids_for_booking(date_from: date, date_to: date, hotel_id: int | None = None):
+    if date_from >= date_to:
+        raise DateValuesException
+
     rooms_booked_table = (
         select(BookingsOrm.room_id, func.count("*").label("rooms_booked_count"))
         .select_from(BookingsOrm)

@@ -6,7 +6,7 @@ from src.service.auth import AuthService
     "email, password, status_code",
     [
         ("user@mail.ru", "12345", 200),
-        ("user@mail.ru", "12345", 400),
+        ("user@mail.ru", "12345", 409),
         ("userail.ru", "12345", 422),
         ("user123@mail.ru", "12345", 200),
     ],

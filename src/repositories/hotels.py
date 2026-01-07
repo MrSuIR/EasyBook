@@ -1,7 +1,5 @@
 from datetime import date
-
 from sqlalchemy import select
-
 from src.models import HotelsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import HotelDataMapper
