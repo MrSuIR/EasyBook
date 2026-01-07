@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import sys
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
@@ -26,12 +28,26 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+# CORS middleware configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(router_auth)
 app.include_router(router_hotels)
 app.include_router(router_rooms)
 app.include_router(router_bookings)
 app.include_router(router_facilities)
 app.include_router(router_images)
+
+# Serve uploaded images
+static_path = Path(__file__).parent / "static"
+if static_path.exists():
+    app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
