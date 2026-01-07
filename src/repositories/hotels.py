@@ -12,17 +12,22 @@ class HotelsRepository(BaseRepository):
 
     async def get_filtered_by_time(
         self,
-        date_from: date,
-        date_to: date,
+        date_from: date | None,
+        date_to: date | None,
         limit: int,
         offset: int,
         title: str | None = None,
         location: str | None = None,
     ):
-        rooms_ids_to_get = rooms_ids_for_booking(date_from, date_to)
-        hotels_ids = select(RoomsOrm.hotel_id).where(RoomsOrm.id.in_(rooms_ids_to_get))
+        # If dates are provided, filter by availability
+        if date_from and date_to:
+            rooms_ids_to_get = rooms_ids_for_booking(date_from, date_to)
+            hotels_ids = select(RoomsOrm.hotel_id).where(RoomsOrm.id.in_(rooms_ids_to_get))
+            query = select(HotelsOrm).filter(HotelsOrm.id.in_(hotels_ids))
+        else:
+            # No date filtering - show all hotels
+            query = select(HotelsOrm)
 
-        query = select(HotelsOrm).filter(HotelsOrm.id.in_(hotels_ids))
         if location:
             query = query.filter(HotelsOrm.location.ilike(f"%{location}%"))
         if title:

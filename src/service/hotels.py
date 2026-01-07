@@ -10,8 +10,8 @@ class HotelService(BaseService):
     async def get_hotels(
             self,
             pagination: PaginationDep,
-            date_from: date,
-            date_to: date,
+            date_from: date | None = None,
+            date_to: date | None = None,
             title: str | None = None,
             location: str | None = None,
     ):
