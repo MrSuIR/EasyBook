@@ -1,69 +1,109 @@
-from fastapi import HTTPException
-
 class EasyBookException(Exception):
+    status_code = 500
+    code = "internal_error"
     detail = "Неожиданная ошибка"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(self.detail, *args, **kwargs)
+    def __init__(self, detail: str | None = None):
+        self.detail = detail or self.detail
+        super().__init__(self.detail)
 
-class HotelNotFoundException(EasyBookException):
-    detail = "Отель не найден"
-
-class RoomNotFoundException(EasyBookException):
-    detail = "Номер не найден"
 
 class ObjectNotFoundException(EasyBookException):
+    status_code = 404
+    code = "object_not_found"
     detail = "Объект не найден"
 
-class AllRoomsAreBookedException(EasyBookException):
-    detail = "Не осталось свободных номеров"
 
-class ObjectAlreadyExistException(EasyBookException):
-    detail = "Объект уже существует"
-
-class ObjectIntegrityException(EasyBookException):
-    detail = "Ошибка интеграции"
-
-class DateValuesException(EasyBookException):
-    detail = "Невалидная дата"
-
-class UserAlreadyExistsException(EasyBookException):
-    detail = "Пользователь уже существует"
-
-class LoginFailedException(EasyBookException):
-    detail = "Неверный логин или пароль"
-
-class IncorrectTokenException(EasyBookException):
-    detail = "Некорректный токен"
-
-
-class EasyBookHTTPException(HTTPException):
-    status_code = 500
-    detail = None
-
-    def __init__(self):
-        super().__init__(self.status_code, self.detail)
-
-class HotelNotFoundHTTPException(EasyBookHTTPException):
-    status_code = 404
+class HotelNotFoundException(ObjectNotFoundException):
+    code = "hotel_not_found"
     detail = "Отель не найден"
 
-class RoomNotFoundHTTPException(EasyBookHTTPException):
-    status_code = 404
+
+class RoomNotFoundException(ObjectNotFoundException):
+    code = "room_not_found"
     detail = "Номер не найден"
 
-class UserAlreadyExistsHTTPException(EasyBookHTTPException):
+
+class BookingNotFoundException(ObjectNotFoundException):
+    code = "booking_not_found"
+    detail = "Бронирование не найдено"
+
+
+class FacilityNotFoundException(ObjectNotFoundException):
+    code = "facility_not_found"
+    detail = "Одно или несколько удобств не найдены"
+
+
+class ImageNotFoundException(ObjectNotFoundException):
+    code = "image_not_found"
+    detail = "Изображение не найдено"
+
+
+class ObjectAlreadyExistException(EasyBookException):
     status_code = 409
+    code = "object_already_exists"
+    detail = "Объект уже существует"
+
+
+class ObjectIntegrityException(EasyBookException):
+    status_code = 409
+    code = "integrity_conflict"
+    detail = "Операция нарушает целостность данных"
+
+
+class DateValuesException(EasyBookException):
+    status_code = 400
+    code = "invalid_date_range"
+    detail = "Невалидный диапазон дат"
+
+
+class AllRoomsAreBookedException(EasyBookException):
+    status_code = 409
+    code = "room_unavailable"
+    detail = "На выбранные даты не осталось свободных номеров"
+
+
+class UserAlreadyExistsException(ObjectAlreadyExistException):
+    code = "user_already_exists"
     detail = "Пользователь уже существует"
 
-class LoginFailedHTTPException(EasyBookHTTPException):
+
+class LoginFailedException(EasyBookException):
     status_code = 401
+    code = "login_failed"
     detail = "Неверный логин или пароль"
 
-class IncorrectTokenHTTPException(EasyBookHTTPException):
-    status_code = 401
-    detail = "Некорректный токен"
 
-class AllRoomsAreBookedHTTPException(EasyBookHTTPException):
-    status_code = 409
-    detail = "Не осталось свободных номеров"
+class IncorrectTokenException(EasyBookException):
+    status_code = 401
+    code = "invalid_token"
+    detail = "Некорректный или истёкший токен"
+
+
+class AuthenticationRequiredException(IncorrectTokenException):
+    code = "authentication_required"
+    detail = "Необходима авторизация"
+
+
+class ForbiddenException(EasyBookException):
+    status_code = 403
+    code = "forbidden"
+    detail = "Недостаточно прав для выполнения операции"
+
+
+class ImageValidationException(EasyBookException):
+    status_code = 422
+    code = "invalid_image"
+    detail = "Файл не является допустимым изображением JPEG, PNG или WebP"
+
+
+class ImageTooLargeException(EasyBookException):
+    status_code = 413
+    code = "image_too_large"
+    detail = "Размер изображения превышает 5 МБ"
+
+
+class ImageQueueUnavailableException(EasyBookException):
+    status_code = 503
+    code = "image_queue_unavailable"
+    detail = "Сервис обработки изображений временно недоступен"

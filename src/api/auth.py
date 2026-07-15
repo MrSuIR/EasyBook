@@ -1,38 +1,38 @@
-from fastapi import APIRouter, Response
-from src.api.dependencies import UserIdDep, DBDep
-from src.exceptions import UserAlreadyExistsException, UserAlreadyExistsHTTPException, \
-    LoginFailedException, LoginFailedHTTPException
-from src.schemas.users import UserRequestAdd
+from fastapi import APIRouter, Request, Response
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from src.api.dependencies import CurrentUserDep, DBDep, set_auth_cookie
+from src.config import settings
+from src.schemas.users import User, UserRequestAdd
 from src.service.auth import AuthService
 
+limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
 
 
-@router.post("/register")
-async def register_user(db: DBDep, request_data: UserRequestAdd):
-    try:
-        await AuthService(db).register_user(request_data=request_data)
-    except UserAlreadyExistsException:
-        raise UserAlreadyExistsHTTPException
-    return {"status": "OK"}
+@router.post("/register", status_code=201)
+@limiter.limit("5/minute")
+async def register_user(request: Request, db: DBDep, request_data: UserRequestAdd):
+    return {"status": "OK", "data": await AuthService(db).register_user(request_data)}
 
 
 @router.post("/login")
-async def login_user(db: DBDep, request_data: UserRequestAdd, response: Response):
-    try:
-        access_token = await AuthService(db).login_user(request_data=request_data)
-    except LoginFailedException:
-        raise LoginFailedHTTPException
-    response.set_cookie("access_token", access_token)
-    return {"access_token": access_token}
+@limiter.limit("10/minute")
+async def login_user(
+    request: Request, db: DBDep, request_data: UserRequestAdd, response: Response
+):
+    set_auth_cookie(response, await AuthService(db).login_user(request_data))
+    return {"status": "OK"}
 
 
-@router.get("/me")
-async def get_me(db: DBDep, user_id: UserIdDep):
-    return await AuthService(db).get_me(user_id=user_id)
+@router.get("/me", response_model=User)
+async def get_me(user: CurrentUserDep):
+    return user
 
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie(key="access_token")
+    response.delete_cookie(
+        key="access_token", httponly=True, secure=settings.cookie_secure, samesite="lax"
+    )
     return {"status": "OK"}

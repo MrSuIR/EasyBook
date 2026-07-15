@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -24,10 +25,22 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     JWT_SECRET_KEY: str
-    JWT_ALGORITHM: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    TIMEZONE: str = "Europe/Moscow"
+    IMAGE_DIR: Path = Path("src/static/images")
+    MAX_IMAGE_SIZE_BYTES: int = 5 * 1024 * 1024
+    COOKIE_SECURE: bool | None = None
 
-    model_config = SettingsConfigDict(env_file=".env")
+    @property
+    def cookie_secure(self) -> bool:
+        return (
+            self.COOKIE_SECURE
+            if self.COOKIE_SECURE is not None
+            else self.MODE == "PROD"
+        )
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
-settings = Settings()
+settings = Settings()  # pyright: ignore[reportCallIssue]

@@ -1,21 +1,46 @@
-from src.schemas.bookings import BookingAddRequest, BookingAdd
+from src.constants import UserRole
+from src.exceptions import (
+    BookingNotFoundException,
+    ForbiddenException,
+    ObjectNotFoundException,
+)
+from src.schemas.bookings import BookingAddRequest, BookingCreate
+from src.schemas.users import User
 from src.service.base import BaseService
-from src.service.hotels import HotelService
-from src.service.rooms import RoomService
 
 
 class BookingService(BaseService):
-    async def get_bookings(self):
-        return await self.db.bookings.get_all()
+    async def get_bookings(self, page: int, per_page: int):
+        return await self.db.bookings.get_paginated(
+            limit=per_page, offset=per_page * (page - 1)
+        )
 
     async def get_my_bookings(self, user_id: int):
         return await self.db.bookings.get_filtered(user_id=user_id)
 
-    async def add_booking(self, booking_data: BookingAddRequest, user_id: int, hotel_id: int):
-        await HotelService(self.db).check_hotel_exist(hotel_id=hotel_id)
-        room = await RoomService(self.db).check_room_exist(room_id=booking_data.room_id, hotel_id=hotel_id)
-        room_price = room.price
-        data = BookingAdd(price=room_price, **booking_data.model_dump(), user_id=user_id)
-        booking = await self.db.bookings.add_booking(data=data, hotel_id=hotel_id)
+    async def get_booking(self, booking_id: int, actor: User):
+        try:
+            booking = await self.db.bookings.get_one(id=booking_id)
+        except ObjectNotFoundException as ex:
+            raise BookingNotFoundException from ex
+        self._check_access(booking.user_id, actor)
+        return booking
+
+    async def add_booking(self, data: BookingAddRequest, user_id: int):
+        booking = await self.db.bookings.add_booking(
+            BookingCreate(user_id=user_id, **data.model_dump())
+        )
         await self.db.commit()
         return booking
+
+    async def cancel_booking(self, booking_id: int, actor: User):
+        booking = await self.get_booking(booking_id, actor)
+        self._check_access(booking.user_id, actor)
+        result = await self.db.bookings.cancel(booking_id)
+        await self.db.commit()
+        return result
+
+    @staticmethod
+    def _check_access(owner_id: int, actor: User):
+        if actor.role != UserRole.ADMIN and actor.id != owner_id:
+            raise ForbiddenException

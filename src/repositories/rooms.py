@@ -26,7 +26,8 @@ class RoomsRepository(BaseRepository):
 
         result = await self.session.execute(query)
         return [
-            RoomDataWithRelsMapper.map_to_domain_entity(model) for model in result.scalars().all()
+            RoomDataWithRelsMapper.map_to_domain_entity(model)
+            for model in result.scalars().all()
         ]
 
     async def get_room_with_rels(self, room_id: int, hotel_id: int):
