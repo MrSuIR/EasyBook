@@ -16,6 +16,13 @@ async def create_facility(db: DBDep, facility_data: FacilityAdd, _: AdminUserDep
     return await FacilityService(db).add_facility(facility_data)
 
 
+@router.put("/{facility_id}", response_model=Facility)
+async def edit_facility(
+    facility_id: int, facility_data: FacilityAdd, db: DBDep, _: AdminUserDep
+):
+    return await FacilityService(db).edit_facility(facility_id, facility_data)
+
+
 @router.delete("/{facility_id}")
 async def delete_facility(facility_id: int, db: DBDep, _: AdminUserDep):
     await FacilityService(db).delete_facility(facility_id)

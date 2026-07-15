@@ -110,7 +110,7 @@ uvicorn src.main:app
 | `POST /auth/register`, `/auth/login`, `/auth/logout` | все | учётная запись и сессия |
 | `GET /auth/me` | пользователь | ID, email и роль |
 | `GET /hotels` | все | доступные отели, пагинация |
-| mutations `/hotels`, `/hotels/{id}/rooms`, `/facilities` | admin | управление каталогом |
+| mutations `/hotels`, `/hotels/{id}/rooms`, `/facilities` | admin | управление каталогом, включая изменение удобств |
 | `POST /bookings` | пользователь | создать бронь |
 | `GET /bookings/me` | пользователь | свои брони |
 | `GET /bookings/{id}` | владелец/admin | одна бронь |
@@ -119,7 +119,7 @@ uvicorn src.main:app
 | `POST /reviews` | владелец брони | создать отзыв после даты выезда |
 | `GET /reviews/me`, `GET/PATCH/DELETE /reviews/{id}` | владелец | свои отзывы |
 | `GET /hotels/{id}/reviews` | все | публичные отзывы, пагинация |
-| `POST/DELETE /hotels/{id}/images/...` | admin | изображения |
+| `POST/PUT/DELETE /hotels/{id}/images/...` | admin | загрузка, замена и удаление изображений |
 
 Списки отелей, административных броней и публичных отзывов имеют вид
 `{"items": [], "total": 0, "page": 1, "per_page": 10}`.

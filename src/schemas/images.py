@@ -13,6 +13,10 @@ class HotelImage(HotelImageAdd):
     created_at: datetime
 
 
+class HotelImagePathPatch(BaseModel):
+    original_path: str
+
+
 class HotelImageResponse(BaseModel):
     id: UUID
     hotel_id: int
