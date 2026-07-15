@@ -18,9 +18,7 @@ async def register_user(request: Request, db: DBDep, request_data: UserRequestAd
 
 @router.post("/login")
 @limiter.limit("10/minute")
-async def login_user(
-    request: Request, db: DBDep, request_data: UserRequestAdd, response: Response
-):
+async def login_user(request: Request, db: DBDep, request_data: UserRequestAdd, response: Response):
     set_auth_cookie(response, await AuthService(db).login_user(request_data))
     return {"status": "OK"}
 
@@ -32,7 +30,5 @@ async def get_me(user: CurrentUserDep):
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie(
-        key="access_token", httponly=True, secure=settings.cookie_secure, samesite="lax"
-    )
+    response.delete_cookie(key="access_token", httponly=True, secure=settings.cookie_secure, samesite="lax")
     return {"status": "OK"}

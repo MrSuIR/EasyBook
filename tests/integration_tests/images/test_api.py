@@ -1,5 +1,4 @@
 from io import BytesIO
-from unittest.mock import Mock
 
 import pytest
 from PIL import Image
@@ -14,22 +13,22 @@ def valid_png() -> bytes:
 
 
 @pytest.mark.asyncio
-async def test_image_upload_ignores_filename_and_requires_admin(
-    monkeypatch, client, admin_client, clean_database
-):
-    task = Mock()
-    monkeypatch.setattr("src.service.images.resize_image", task)
+async def test_image_upload_ignores_filename_and_requires_admin(client, admin_client, clean_database):
     hotel_id = clean_database["hotel_id"]
     files = {"file": ("../../evil.png", valid_png(), "image/png")}
-    assert (
-        await client.post(f"/hotels/{hotel_id}/images", files=files)
-    ).status_code == 403
+    assert (await client.post(f"/hotels/{hotel_id}/images", files=files)).status_code == 403
     created = await admin_client.post(f"/hotels/{hotel_id}/images", files=files)
-    assert created.status_code == 202
+    assert created.status_code == 201
     body = created.json()
     assert "evil" not in body["original_url"]
     assert ".." not in body["original_url"]
+    assert set(body) == {"id", "hotel_id", "created_at", "original_url"}
+    assert (settings.IMAGE_DIR / body["original_url"].removeprefix("/static/images/")).is_file()
     assert (settings.IMAGE_DIR / str(hotel_id)).is_dir()
+
+    images = await client.get(f"/hotels/{hotel_id}/images")
+    assert images.status_code == 200
+    assert images.json() == [body]
 
 
 @pytest.mark.asyncio
@@ -42,24 +41,5 @@ async def test_invalid_mime_corruption_and_size_rejected(admin_client, clean_dat
     )
     expected = (422, 422, 413)
     for file_data, status_code in zip(cases, expected, strict=True):
-        response = await admin_client.post(
-            f"/hotels/{hotel_id}/images", files={"file": file_data}
-        )
+        response = await admin_client.post(f"/hotels/{hotel_id}/images", files={"file": file_data})
         assert response.status_code == status_code
-
-
-@pytest.mark.asyncio
-async def test_broker_failure_marks_image_failed(
-    monkeypatch, admin_client, clean_database
-):
-    task = Mock()
-    task.delay.side_effect = RuntimeError("broker unavailable")
-    monkeypatch.setattr("src.service.images.resize_image", task)
-    hotel_id = clean_database["hotel_id"]
-    response = await admin_client.post(
-        f"/hotels/{hotel_id}/images",
-        files={"file": ("photo.png", valid_png(), "image/png")},
-    )
-    assert response.status_code == 503
-    images = await admin_client.get(f"/hotels/{hotel_id}/images")
-    assert images.json()[0]["status"] == "failed"

@@ -15,26 +15,12 @@ async def get_images(hotel_id: int, db: DBDep):
     return await ImageService(db).get_images(hotel_id)
 
 
-@router.post(
-    "/{hotel_id}/images",
-    response_model=HotelImageResponse,
-    status_code=status.HTTP_202_ACCEPTED,
-)
-async def upload_image(
-    hotel_id: int,
-    file: UploadFile,
-    db: DBDep,
-    _: AdminUserDep,
-):
+@router.post("/{hotel_id}/images", response_model=HotelImageResponse, status_code=status.HTTP_201_CREATED)
+async def upload_image(hotel_id: int, file: UploadFile, db: DBDep, _: AdminUserDep):
     return await ImageService(db).upload_image(hotel_id, file)
 
 
 @router.delete("/{hotel_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_image(
-    hotel_id: int,
-    image_id: UUID,
-    db: DBDep,
-    _: AdminUserDep,
-):
+async def delete_image(hotel_id: int, image_id: UUID, db: DBDep, _: AdminUserDep):
     await ImageService(db).delete_image(hotel_id, image_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

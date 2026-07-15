@@ -3,6 +3,7 @@
 !.env.example
 .venv/
 venv/
+.AGENTS.md
 .idea/
 .vscode/
 .pytest_cache/
