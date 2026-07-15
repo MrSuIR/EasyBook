@@ -3,10 +3,11 @@ from sqlalchemy import func, select, update
 from src.constants import BookingStatus
 from src.exceptions import (
     AllRoomsAreBookedException,
+    BookingHasReviewException,
     BookingNotFoundException,
     RoomNotFoundException,
 )
-from src.models import BookingsOrm, RoomsOrm
+from src.models import BookingsOrm, ReviewsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import BookingDataMapper
 from src.schemas.bookings import BookingAdd, BookingCreate
@@ -15,6 +16,22 @@ from src.schemas.bookings import BookingAdd, BookingCreate
 class BookingsRepository(BaseRepository):
     model = BookingsOrm
     mapper = BookingDataMapper
+
+    async def get_for_update(self, booking_id: int):
+        booking = (
+            (
+                await self.session.execute(
+                    select(BookingsOrm)
+                    .where(BookingsOrm.id == booking_id)
+                    .with_for_update()
+                )
+            )
+            .scalars()
+            .one_or_none()
+        )
+        if booking is None:
+            raise BookingNotFoundException
+        return self.mapper.map_to_domain_entity(booking)
 
     async def get_bookings_with_today_checkin(self):
         result = await self.session.execute(
@@ -90,6 +107,13 @@ class BookingsRepository(BaseRepository):
         )
         if booking.status == BookingStatus.CANCELLED.value:
             return self.mapper.map_to_domain_entity(booking)
+        review_id = (
+            await self.session.execute(
+                select(ReviewsOrm.id).where(ReviewsOrm.booking_id == booking_id)
+            )
+        ).scalar_one_or_none()
+        if review_id is not None:
+            raise BookingHasReviewException
         stmt = (
             update(BookingsOrm)
             .where(BookingsOrm.id == booking_id)

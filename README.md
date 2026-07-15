@@ -11,6 +11,7 @@ EasyBook — backend курсового проекта по базам данн�
 - поиск доступных отелей и номеров по датам;
 - защищённое от параллельных запросов бронирование;
 - отмена без удаления истории;
+- отзывы владельцев после завершения подтверждённого проживания;
 - безопасная загрузка изображений JPEG/PNG/WebP до 5 МБ;
 - PostgreSQL и Alembic;
 - Swagger по адресу `/docs`, healthcheck-и `/health/live` и `/health/ready`.
@@ -37,6 +38,7 @@ erDiagram
     USERS ||--o{ BOOKINGS : creates
     HOTELS ||--o{ ROOMS : contains
     ROOMS ||--o{ BOOKINGS : reserved_as
+    BOOKINGS ||--o| REVIEWS : receives
     ROOMS ||--o{ ROOMS_FACILITIES : has
     FACILITIES ||--o{ ROOMS_FACILITIES : assigned
     HOTELS ||--o{ HOTEL_IMAGES : owns
@@ -45,14 +47,21 @@ erDiagram
     HOTELS { int id PK string title string location }
     ROOMS { int id PK int hotel_id FK int price int quantity }
     BOOKINGS { int id PK int room_id FK int user_id FK date date_from date date_to int price string status }
+    REVIEWS { int id PK int booking_id FK_UK int rating string comment datetime created_at datetime updated_at }
     FACILITIES { int id PK string title }
     HOTEL_IMAGES { uuid id PK int hotel_id FK string original_path datetime created_at }
 ```
 
 Ключевые ограничения БД: `price >= 0`, `quantity > 0`,
-`date_from < date_to`, уникальная пара удобства и номера. Удаление отеля,
+`date_from < date_to`, `rating BETWEEN 1 AND 5`, один отзыв на бронь и
+уникальная пара удобства и номера. Удаление отеля,
 номера или пользователя с бронями запрещено (`409`), связи удобств удаляются
 каскадно.
+
+Отзыв создаёт только владелец подтверждённой брони начиная с даты выезда.
+Комментарий обязателен и содержит не более 2000 символов. Отзыв можно изменять
+и удалять; после удаления для той же брони его можно создать снова. Бронь с
+существующим отзывом отменить нельзя.
 
 ## Защита от овербукинга
 
@@ -107,9 +116,12 @@ uvicorn src.main:app
 | `GET /bookings/{id}` | владелец/admin | одна бронь |
 | `POST /bookings/{id}/cancel` | владелец/admin | идемпотентная отмена |
 | `GET /bookings` | admin | все брони, пагинация |
+| `POST /reviews` | владелец брони | создать отзыв после даты выезда |
+| `GET /reviews/me`, `GET/PATCH/DELETE /reviews/{id}` | владелец | свои отзывы |
+| `GET /hotels/{id}/reviews` | все | публичные отзывы, пагинация |
 | `POST/DELETE /hotels/{id}/images/...` | admin | изображения |
 
-Списки отелей и административных броней имеют вид
+Списки отелей, административных броней и публичных отзывов имеют вид
 `{"items": [], "total": 0, "page": 1, "per_page": 10}`.
 
 ## Ошибки
@@ -123,9 +135,12 @@ uvicorn src.main:app
 | `401` | токен отсутствует, повреждён или истёк |
 | `403` | недостаточно прав |
 | `404` | объект отсутствует |
-| `409` | номер занят или нарушена целостность данных |
+| `409` | номер занят, отзыв недоступен или нарушена целостность данных |
 | `413` | изображение больше 5 МБ |
 | `429` | превышен лимит регистрации/входа |
+
+Для отзывов используются коды `review_already_exists`, `review_not_allowed`,
+`booking_has_review` и `review_not_found`.
 
 ## Тесты и миграции
 
@@ -140,7 +155,8 @@ alembic check
 ```
 
 Интеграционные тесты проверяют права, JWT, ограничения БД, соседние интервалы,
-10 параллельных броней, отмену, приватность и валидацию изображений. Для
+10 параллельных броней, конкурентное создание отзывов, отмену, приватность и
+валидацию изображений. Для
 проверки истории миграций используются `alembic upgrade head` и
 `alembic downgrade base` на отдельной БД.
 
