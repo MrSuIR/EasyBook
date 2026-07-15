@@ -201,3 +201,48 @@ async def test_concurrent_review_and_cancellation_preserve_invariant(
         assert cancel_response.json()["code"] == "booking_has_review"
     else:
         assert review_response.json()["code"] == "review_not_allowed"
+
+
+@pytest.mark.asyncio
+async def test_public_review_sorting_defaults_partial_params_and_tie_breaker(
+    anonymous_client, client, clean_database
+):
+    reviews = []
+    for rating in (3, 5, 3):
+        booking = await create_booking(clean_database["room_id"])
+        response = await client.post(
+            "/reviews", json=review_payload(booking.id, rating=rating)
+        )
+        assert response.status_code == 201
+        reviews.append(response.json())
+
+    url = f"/hotels/{clean_database['hotel_id']}/reviews"
+    default = await anonymous_client.get(url)
+    assert [item["id"] for item in default.json()["items"]] == [
+        item["id"] for item in reversed(reviews)
+    ]
+
+    oldest_first = await anonymous_client.get(f"{url}?sort_order=asc")
+    assert [item["id"] for item in oldest_first.json()["items"]] == [
+        item["id"] for item in reviews
+    ]
+
+    by_rating = await anonymous_client.get(f"{url}?sort_by=rating")
+    assert [item["id"] for item in by_rating.json()["items"]] == [
+        reviews[1]["id"],
+        reviews[2]["id"],
+        reviews[0]["id"],
+    ]
+
+
+@pytest.mark.asyncio
+async def test_review_sorting_rejects_unknown_values(
+    anonymous_client, clean_database
+):
+    url = f"/hotels/{clean_database['hotel_id']}/reviews"
+    for query in ("sort_by=updated_at", "sort_order=newest"):
+        assert (await anonymous_client.get(f"{url}?{query}")).status_code == 422
+    for sort_by in ("created_at", "rating"):
+        assert (
+            await anonymous_client.get(url, params={"sort_by": sort_by})
+        ).status_code == 200

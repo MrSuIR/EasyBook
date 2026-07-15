@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
 from src.api.dependencies import CurrentUserDep, DBDep, PaginationDep
-from src.schemas.common import PaginatedResponse
-from src.schemas.reviews import Review, ReviewCreate, ReviewPatch, ReviewPublic
+from src.schemas.common import PaginatedResponse, SortOrder
+from src.schemas.reviews import Review, ReviewCreate, ReviewPatch, ReviewPublic, ReviewSortBy
 from src.service.reviews import ReviewService
 
 
@@ -14,10 +14,14 @@ router = APIRouter(tags=["Отзывы"])
     response_model=PaginatedResponse[ReviewPublic],
 )
 async def get_hotel_reviews(
-    hotel_id: int, db: DBDep, pagination: PaginationDep
+    hotel_id: int,
+    db: DBDep,
+    pagination: PaginationDep,
+    sort_by: ReviewSortBy | None = None,
+    sort_order: SortOrder | None = None,
 ):
     items, total = await ReviewService(db).get_hotel_reviews(
-        hotel_id, pagination.page, pagination.per_page
+        hotel_id, pagination.page, pagination.per_page, sort_by, sort_order
     )
     return PaginatedResponse(
         items=items,

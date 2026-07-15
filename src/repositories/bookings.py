@@ -10,7 +10,8 @@ from src.exceptions import (
 from src.models import BookingsOrm, ReviewsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import BookingDataMapper
-from src.schemas.bookings import BookingAdd, BookingCreate
+from src.schemas.bookings import BookingAdd, BookingCreate, BookingSortBy
+from src.schemas.common import SortOrder
 
 
 class BookingsRepository(BaseRepository):
@@ -44,9 +45,27 @@ class BookingsRepository(BaseRepository):
             self.mapper.map_to_domain_entity(item) for item in result.scalars().all()
         ]
 
-    async def get_paginated(self, limit: int, offset: int):
+    async def get_paginated(
+        self,
+        limit: int,
+        offset: int,
+        sort_by: BookingSortBy,
+        sort_order: SortOrder,
+    ):
+        sort_column = {
+            BookingSortBy.ID: BookingsOrm.id,
+            BookingSortBy.DATE_FROM: BookingsOrm.date_from,
+            BookingSortBy.DATE_TO: BookingsOrm.date_to,
+            BookingSortBy.PRICE: BookingsOrm.price,
+            BookingSortBy.STATUS: BookingsOrm.status,
+        }[sort_by]
+        order = sort_column.asc if sort_order == SortOrder.ASC else sort_column.desc
+        query = select(BookingsOrm).order_by(order())
+        if sort_by != BookingSortBy.ID:
+            id_order = BookingsOrm.id.asc if sort_order == SortOrder.ASC else BookingsOrm.id.desc
+            query = query.order_by(id_order())
         result = await self.session.execute(
-            select(BookingsOrm).order_by(BookingsOrm.id).limit(limit).offset(offset)
+            query.limit(limit).offset(offset)
         )
         return [
             self.mapper.map_to_domain_entity(item) for item in result.scalars().all()

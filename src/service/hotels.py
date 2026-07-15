@@ -1,7 +1,8 @@
 from datetime import date
 
 from src.exceptions import ObjectNotFoundException, HotelNotFoundException
-from src.schemas.hotels import HotelAdd, HotelPatch
+from src.schemas.common import SortOrder
+from src.schemas.hotels import HotelAdd, HotelPatch, HotelSortBy
 from src.service.base import BaseService
 
 
@@ -14,6 +15,8 @@ class HotelService(BaseService):
         date_to: date,
         title: str | None = None,
         location: str | None = None,
+        sort_by: HotelSortBy | None = None,
+        sort_order: SortOrder | None = None,
     ):
         return await self.db.hotels.get_filtered_by_time(
             date_from=date_from,
@@ -22,6 +25,8 @@ class HotelService(BaseService):
             title=title,
             limit=per_page,
             offset=per_page * (page - 1),
+            sort_by=sort_by or HotelSortBy.ID,
+            sort_order=sort_order or SortOrder.ASC,
         )
 
     async def get_hotel(self, hotel_id: int):
