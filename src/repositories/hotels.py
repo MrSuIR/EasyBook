@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import select
+from sqlalchemy import func, select
 from src.models import HotelsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import HotelDataMapper
@@ -28,6 +28,12 @@ class HotelsRepository(BaseRepository):
         if title:
             query = query.filter_by(title=title)
         query = query.limit(limit).offset(offset)
+        total = (
+            await self.session.execute(
+                select(func.count()).select_from(query.order_by(None).subquery())
+            )
+        ).scalar_one()
         result = await self.session.execute(query)
-
-        return [self.mapper.map_to_domain_entity(hotel) for hotel in result.scalars().all()]
+        return [
+            self.mapper.map_to_domain_entity(hotel) for hotel in result.scalars().all()
+        ], total

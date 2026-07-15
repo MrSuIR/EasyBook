@@ -1,44 +1,62 @@
 import pytest
-from src.service.auth import AuthService
 
 
-@pytest.mark.parametrize(
-    "email, password, status_code",
-    [
-        ("user@mail.ru", "12345", 200),
-        ("user@mail.ru", "12345", 409),
-        ("userail.ru", "12345", 422),
-        ("user123@mail.ru", "12345", 200),
-    ],
-)
-async def test_auth_flow(email: str, password: str, status_code, ac, db):
-    register_response = await ac.post("/auth/register", json={"email": email, "password": password})
-    assert register_response.status_code == status_code
-    if status_code != 200:
-        return None
-    assert register_response.json()["status"] == "OK"
-    user = await db.users.get_one_or_none(email=email)
-    assert user
-    assert user.email == email
+@pytest.mark.asyncio
+async def test_register_login_me_logout(anonymous_client):
+    response = await anonymous_client.post(
+        "/auth/register",
+        json={"email": "  NEW@Example.COM ", "password": "strongpass"},
+    )
+    assert response.status_code == 201
+    assert response.json()["data"]["role"] == "client"
 
-    login_response = await ac.post("/auth/login", json={"email": email, "password": password})
-    assert login_response.status_code == status_code
-    if status_code != 200:
-        return None
-    access_token = login_response.json()["access_token"]
-    payload = AuthService().decode_token(access_token)
-    assert access_token
-    assert payload
-    assert user.id == payload["user_id"]
+    response = await anonymous_client.post(
+        "/auth/login",
+        json={"email": "new@example.com", "password": "strongpass"},
+    )
+    assert response.status_code == 200
+    assert "access_token" not in response.json()
+    assert anonymous_client.cookies.get("access_token")
 
-    auth_me_response = await ac.get("/auth/me")
-    assert auth_me_response.status_code == status_code
-    assert auth_me_response.json()["id"] == user.id
-    assert auth_me_response.json()["email"] == email
-    assert "password" not in auth_me_response.json()
-    assert "hashed_password" not in auth_me_response.json()
+    me = await anonymous_client.get("/auth/me")
+    assert me.json()["email"] == "new@example.com"
+    assert me.json()["role"] == "client"
 
-    logout_response = await ac.post("/auth/logout")
-    assert logout_response.status_code == status_code
-    assert logout_response.json()["status"] == "OK"
-    assert "access_token" not in ac.cookies
+    await anonymous_client.post("/auth/logout")
+    assert (await anonymous_client.get("/auth/me")).status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_password_limits_and_role_injection(anonymous_client):
+    short = await anonymous_client.post(
+        "/auth/register", json={"email": "short@example.com", "password": "123"}
+    )
+    assert short.status_code == 422
+    injected = await anonymous_client.post(
+        "/auth/register",
+        json={
+            "email": "role@example.com",
+            "password": "password123",
+            "role": "admin",
+        },
+    )
+    assert injected.status_code == 422
+    assert injected.json()["code"] == "validation_error"
+
+
+@pytest.mark.asyncio
+async def test_broken_cookie_is_unauthorized(anonymous_client):
+    anonymous_client.cookies.set("access_token", "broken")
+    response = await anonymous_client.get("/auth/me")
+    assert response.status_code == 401
+    assert response.json()["code"] == "invalid_token"
+
+
+@pytest.mark.asyncio
+async def test_login_rate_limit(anonymous_client):
+    payload = {"email": "nobody@example.com", "password": "password123"}
+    responses = [
+        await anonymous_client.post("/auth/login", json=payload) for _ in range(11)
+    ]
+    assert responses[-1].status_code == 429
+    assert responses[-1].json()["code"] == "rate_limit_exceeded"

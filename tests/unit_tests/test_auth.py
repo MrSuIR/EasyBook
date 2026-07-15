@@ -1,9 +1,29 @@
+from datetime import datetime, timedelta, timezone
+
+import jwt
+import pytest
+
+from src.config import settings
+from src.exceptions import IncorrectTokenException
 from src.service.auth import AuthService
 
 
-def test_create_access_token():
-    data = {"user_id": 1}
-    jwt_token = AuthService().create_access_token(data)
+def test_token_roundtrip():
+    service = AuthService()
+    assert service.decode_token(service.create_access_token(42)) == 42
 
-    assert jwt_token
-    assert isinstance(jwt_token, str)
+
+@pytest.mark.parametrize(
+    "token",
+    [
+        "damaged.token",
+        jwt.encode(
+            {"sub": "1", "exp": datetime.now(timezone.utc) - timedelta(seconds=1)},
+            settings.JWT_SECRET_KEY,
+            algorithm=settings.JWT_ALGORITHM,
+        ),
+    ],
+)
+def test_invalid_or_expired_token(token):
+    with pytest.raises(IncorrectTokenException):
+        AuthService().decode_token(token)

@@ -2,6 +2,7 @@ from datetime import date
 from sqlalchemy import select, func
 
 from src.exceptions import DateValuesException
+from src.constants import BookingStatus
 from src.models import BookingsOrm, RoomsOrm
 
 
@@ -12,7 +13,11 @@ def rooms_ids_for_booking(date_from: date, date_to: date, hotel_id: int | None =
     rooms_booked_table = (
         select(BookingsOrm.room_id, func.count("*").label("rooms_booked_count"))
         .select_from(BookingsOrm)
-        .filter(BookingsOrm.date_from <= date_to, BookingsOrm.date_to >= date_from)
+        .filter(
+            BookingsOrm.status == BookingStatus.CONFIRMED.value,
+            BookingsOrm.date_from < date_to,
+            BookingsOrm.date_to > date_from,
+        )
         .group_by(BookingsOrm.room_id)
         .cte(name="rooms_booked_table")
     )
@@ -20,9 +25,10 @@ def rooms_ids_for_booking(date_from: date, date_to: date, hotel_id: int | None =
     rooms_left_table = (
         select(
             RoomsOrm.id.label("room_id"),
-            (RoomsOrm.quantity - func.coalesce(rooms_booked_table.c.rooms_booked_count, 0)).label(
-                "rooms_left_count"
-            ),
+            (
+                RoomsOrm.quantity
+                - func.coalesce(rooms_booked_table.c.rooms_booked_count, 0)
+            ).label("rooms_left_count"),
         )
         .select_from(RoomsOrm)
         .outerjoin(rooms_booked_table, RoomsOrm.id == rooms_booked_table.c.room_id)

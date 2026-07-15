@@ -1,26 +1,39 @@
 from fastapi import APIRouter
-from src.api.dependencies import DBDep, UserIdDep
-from src.exceptions import AllRoomsAreBookedException, AllRoomsAreBookedHTTPException
-from src.schemas.bookings import BookingAddRequest
+from src.api.dependencies import AdminUserDep, CurrentUserDep, DBDep, PaginationDep
+from src.schemas.bookings import Booking, BookingAddRequest
+from src.schemas.common import PaginatedResponse
 from src.service.bookings import BookingService
 
 router = APIRouter(prefix="/bookings", tags=["Бронирования"])
 
 
-@router.get("")
-async def get_bookings(db: DBDep):
-    return await BookingService(db).get_bookings()
+@router.get("", response_model=PaginatedResponse[Booking])
+async def get_bookings(db: DBDep, pagination: PaginationDep, _: AdminUserDep):
+    items, total = await BookingService(db).get_bookings(
+        pagination.page, pagination.per_page
+    )
+    return PaginatedResponse(
+        items=items, total=total, page=pagination.page, per_page=pagination.per_page
+    )
 
 
-@router.get("/me")
-async def get_my_bookings(db: DBDep, user_id: UserIdDep):
-    return await BookingService(db).get_my_bookings(user_id=user_id)
+@router.get("/me", response_model=list[Booking])
+async def get_my_bookings(db: DBDep, user: CurrentUserDep):
+    return await BookingService(db).get_my_bookings(user.id)
 
 
-@router.post("")
-async def create_booking(booking_data: BookingAddRequest, db: DBDep, user_id: UserIdDep, hotel_id: int):
-    try:
-        booking = await BookingService(db).add_booking(booking_data=booking_data, user_id=user_id, hotel_id=hotel_id)
-    except AllRoomsAreBookedException:
-        raise AllRoomsAreBookedHTTPException
-    return {"status": "OK", "data": booking}
+@router.get("/{booking_id}", response_model=Booking)
+async def get_booking(booking_id: int, db: DBDep, user: CurrentUserDep):
+    return await BookingService(db).get_booking(booking_id, user)
+
+
+@router.post("", response_model=Booking, status_code=201)
+async def create_booking(
+    booking_data: BookingAddRequest, db: DBDep, user: CurrentUserDep
+):
+    return await BookingService(db).add_booking(booking_data, user.id)
+
+
+@router.post("/{booking_id}/cancel", response_model=Booking)
+async def cancel_booking(booking_id: int, db: DBDep, user: CurrentUserDep):
+    return await BookingService(db).cancel_booking(booking_id, user)

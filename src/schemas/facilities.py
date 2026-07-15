@@ -1,8 +1,16 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 
 class FacilityAdd(BaseModel):
-    title: str
+    title: str = Field(min_length=1, max_length=100)
+
+    @field_validator("title")
+    @classmethod
+    def strip_title(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Название не может быть пустым")
+        return value
 
 
 class Facility(FacilityAdd):

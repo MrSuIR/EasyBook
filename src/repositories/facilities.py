@@ -37,3 +37,11 @@ class RoomsFacilitiesRepository(BaseRepository):
                 [{"room_id": room_id, "facility_id": f_id} for f_id in ids_to_insert]
             )
             await self.session.execute(ids_to_insert_stmt)
+
+    async def existing_ids(self, facilities_ids: list[int]) -> set[int]:
+        if not facilities_ids:
+            return set()
+        query = select(FacilitiesOrm.id).where(
+            FacilitiesOrm.id.in_(set(facilities_ids))
+        )
+        return set((await self.session.execute(query)).scalars().all())

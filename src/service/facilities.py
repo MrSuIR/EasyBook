@@ -10,3 +10,7 @@ class FacilityService(BaseService):
         facility = await self.db.facilities.add(data=facility_data)
         await self.db.commit()
         return facility
+
+    async def delete_facility(self, facility_id: int):
+        await self.db.facilities.delete(id=facility_id)
+        await self.db.commit()
