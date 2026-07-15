@@ -20,6 +20,19 @@ async def upload_image(hotel_id: int, file: UploadFile, db: DBDep, _: AdminUserD
     return await ImageService(db).upload_image(hotel_id, file)
 
 
+@router.put(
+    "/{hotel_id}/images/{image_id}", response_model=HotelImageResponse
+)
+async def replace_image(
+    hotel_id: int,
+    image_id: UUID,
+    file: UploadFile,
+    db: DBDep,
+    _: AdminUserDep,
+):
+    return await ImageService(db).replace_image(hotel_id, image_id, file)
+
+
 @router.delete("/{hotel_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_image(hotel_id: int, image_id: UUID, db: DBDep, _: AdminUserDep):
     await ImageService(db).delete_image(hotel_id, image_id)
