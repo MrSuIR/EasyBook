@@ -13,16 +13,11 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
-    REDIS_HOST: str
-    REDIS_PORT: int
-
-    @property
-    def REDIS_URL(self):
-        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
-
     @property
     def DB_URL(self):
-        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        return (
+            f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        )
 
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
@@ -34,11 +29,7 @@ class Settings(BaseSettings):
 
     @property
     def cookie_secure(self) -> bool:
-        return (
-            self.COOKIE_SECURE
-            if self.COOKIE_SECURE is not None
-            else self.MODE == "PROD"
-        )
+        return self.COOKIE_SECURE if self.COOKIE_SECURE is not None else self.MODE == "PROD"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

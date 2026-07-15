@@ -101,9 +101,3 @@ class ImageTooLargeException(EasyBookException):
     status_code = 413
     code = "image_too_large"
     detail = "Размер изображения превышает 5 МБ"
-
-
-class ImageQueueUnavailableException(EasyBookException):
-    status_code = 503
-    code = "image_queue_unavailable"
-    detail = "Сервис обработки изображений временно недоступен"

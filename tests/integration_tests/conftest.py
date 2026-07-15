@@ -26,8 +26,6 @@ os.environ.update(
         "DB_PORT": str(url.port),
         "DB_USER": str(url.username),
         "DB_PASS": str(url.password),
-        "REDIS_HOST": "localhost",
-        "REDIS_PORT": "6379",
         "JWT_SECRET_KEY": "integration-test-secret",
         "IMAGE_DIR": image_dir,
     }
@@ -68,13 +66,7 @@ async def clean_database():
         hotel = await db.hotels.add(HotelAdd(title="Test Hotel", location="Moscow"))
         facility = await db.facilities.add(FacilityAdd(title="Wi-Fi"))
         room = await db.rooms.add(
-            RoomAdd(
-                hotel_id=hotel.id,
-                title="Standard",
-                description="Test room",
-                price=2500,
-                quantity=1,
-            )
+            RoomAdd(hotel_id=hotel.id, title="Standard", description="Test room", price=2500, quantity=1)
         )
         password_hash = AuthService().hashed_password("password123")
         for email, role in (
@@ -82,9 +74,7 @@ async def clean_database():
             ("client@example.com", UserRole.CLIENT),
             ("other@example.com", UserRole.CLIENT),
         ):
-            await db.users.add(
-                UserAdd(email=email, hashed_password=password_hash, role=role)
-            )
+            await db.users.add(UserAdd(email=email, hashed_password=password_hash, role=role))
         await db.commit()
 
     yield {"hotel_id": hotel.id, "room_id": room.id, "facility_id": facility.id}

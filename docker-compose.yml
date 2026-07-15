@@ -5,8 +5,6 @@ x-app-environment: &app-environment
   DB_PORT: 5432
   DB_USER: easybook
   DB_PASS: easybook
-  REDIS_HOST: redis
-  REDIS_PORT: 6379
   JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-secret-in-production}
   JWT_ALGORITHM: HS256
   ACCESS_TOKEN_EXPIRE_MINUTES: 30
@@ -28,17 +26,6 @@ services:
       timeout: 3s
       retries: 10
 
-  redis:
-    image: redis:7.4-alpine
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
   api:
     build: .
     environment: *app-environment
@@ -49,24 +36,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  worker:
-    build: .
-    command: celery -A src.tasks.celery_app.celery_instance worker --loglevel=INFO
-    environment: *app-environment
-    volumes:
-      - hotel_images:/app/src/static/images
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      disable: true
 
 volumes:
   postgres_data:
-  redis_data:
   hotel_images:

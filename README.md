@@ -11,8 +11,8 @@ EasyBook — backend курсового проекта по базам данн�
 - поиск доступных отелей и номеров по датам;
 - защищённое от параллельных запросов бронирование;
 - отмена без удаления истории;
-- JPEG/PNG/WebP до 5 МБ и фоновые миниатюры 200/500/1000 px;
-- PostgreSQL, Alembic, Redis и Celery;
+- безопасная загрузка изображений JPEG/PNG/WebP до 5 МБ;
+- PostgreSQL и Alembic;
 - Swagger по адресу `/docs`, healthcheck-и `/health/live` и `/health/ready`.
 
 ## Архитектура
@@ -23,14 +23,12 @@ flowchart LR
     A --> S["Сервисы: бизнес-правила"]
     S --> R["Репозитории: запросы SQLAlchemy"]
     R --> P[(PostgreSQL)]
-    S --> Q["Redis: брокер"]
-    Q --> W["Celery worker"]
-    W --> F["Общий volume изображений"]
+    S --> F["Хранилище оригиналов изображений"]
 ```
 
 API отвечает за HTTP-контракт и права, сервисы — за бизнес-правила и
-транзакции, репозитории — за работу с БД. Redis не нужен для запуска API и
-используется только как брокер фоновой обработки изображений.
+транзакции, репозитории — за работу с БД. Оригиналы изображений хранятся в
+отдельном каталоге, а их метаданные — в PostgreSQL.
 
 ## Модель данных
 
@@ -48,7 +46,7 @@ erDiagram
     ROOMS { int id PK int hotel_id FK int price int quantity }
     BOOKINGS { int id PK int room_id FK int user_id FK date date_from date date_to int price string status }
     FACILITIES { int id PK string title }
-    HOTEL_IMAGES { uuid id PK int hotel_id FK string original_path string status }
+    HOTEL_IMAGES { uuid id PK int hotel_id FK string original_path datetime created_at }
 ```
 
 Ключевые ограничения БД: `price >= 0`, `quantity > 0`,
@@ -78,7 +76,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Compose запускает PostgreSQL, Redis, API и Celery worker. API доступен на
+Compose запускает PostgreSQL и API. API доступен на
 `http://localhost:8000`, Swagger — на `http://localhost:8000/docs`. Миграции
 выполняются перед стартом Uvicorn; при ошибке контейнер API останавливается.
 
@@ -128,7 +126,6 @@ uvicorn src.main:app
 | `409` | номер занят или нарушена целостность данных |
 | `413` | изображение больше 5 МБ |
 | `429` | превышен лимит регистрации/входа |
-| `503` | задача изображения не поставлена в очередь |
 
 ## Тесты и миграции
 
@@ -150,5 +147,5 @@ alembic check
 ## Границы проекта
 
 В курсовую входят только backend и БД. Frontend, платежи и настоящая
-email-рассылка не реализуются. Изображения обрабатываются асинхронно, но
-исходный файл и его состояние сохраняются в БД.
+email-рассылка не реализуются. Для изображений сохраняются проверенный оригинал
+и его метаданные; создание миниатюр и другая фоновая обработка не выполняются.
