@@ -5,3 +5,4 @@ from src.models.users import UsersOrm
 from src.models.booking import BookingsOrm
 from src.models.facilities import FacilitiesOrm
 from src.models.images import HotelImagesOrm
+from src.models.reviews import ReviewsOrm

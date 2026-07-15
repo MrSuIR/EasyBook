@@ -5,6 +5,7 @@ from src.models import (
     BookingsOrm,
     FacilitiesOrm,
     HotelImagesOrm,
+    ReviewsOrm,
 )
 from src.models.facilities import RoomsFacilitiesOrm
 from src.repositories.mappers.base import DataMapper
@@ -14,6 +15,7 @@ from src.schemas.hotels import Hotel
 from src.schemas.rooms import Room, RoomWithRels
 from src.schemas.users import User
 from src.schemas.images import HotelImage
+from src.schemas.reviews import Review
 
 
 class HotelDataMapper(DataMapper):
@@ -54,3 +56,8 @@ class RoomDataWithRelsMapper(DataMapper):
 class HotelImageDataMapper(DataMapper):
     db_model = HotelImagesOrm
     schema = HotelImage
+
+
+class ReviewDataMapper(DataMapper):
+    db_model = ReviewsOrm
+    schema = Review

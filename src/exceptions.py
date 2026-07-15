@@ -39,6 +39,11 @@ class ImageNotFoundException(ObjectNotFoundException):
     detail = "Изображение не найдено"
 
 
+class ReviewNotFoundException(ObjectNotFoundException):
+    code = "review_not_found"
+    detail = "Отзыв не найден"
+
+
 class ObjectAlreadyExistException(EasyBookException):
     status_code = 409
     code = "object_already_exists"
@@ -61,6 +66,23 @@ class AllRoomsAreBookedException(EasyBookException):
     status_code = 409
     code = "room_unavailable"
     detail = "На выбранные даты не осталось свободных номеров"
+
+
+class ReviewAlreadyExistsException(ObjectAlreadyExistException):
+    code = "review_already_exists"
+    detail = "Для этого бронирования уже существует отзыв"
+
+
+class ReviewNotAllowedException(EasyBookException):
+    status_code = 409
+    code = "review_not_allowed"
+    detail = "Отзыв можно оставить только после завершения подтверждённого бронирования"
+
+
+class BookingHasReviewException(EasyBookException):
+    status_code = 409
+    code = "booking_has_review"
+    detail = "Нельзя отменить бронирование, для которого оставлен отзыв"
 
 
 class UserAlreadyExistsException(ObjectAlreadyExistException):
