@@ -1,6 +1,16 @@
 from datetime import date, datetime
+from enum import StrEnum
+
 from pydantic import BaseModel, computed_field, model_validator
 from src.constants import BookingStatus
+
+
+class BookingSortBy(StrEnum):
+    ID = "id"
+    DATE_FROM = "date_from"
+    DATE_TO = "date_to"
+    PRICE = "price"
+    STATUS = "status"
 
 
 class BookingAddRequest(BaseModel):

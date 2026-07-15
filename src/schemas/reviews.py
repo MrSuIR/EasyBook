@@ -1,10 +1,16 @@
 from datetime import datetime
+from enum import StrEnum
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 Rating = Annotated[int, Field(strict=True, ge=1, le=5)]
+
+
+class ReviewSortBy(StrEnum):
+    CREATED_AT = "created_at"
+    RATING = "rating"
 
 
 class ReviewCommentMixin(BaseModel):

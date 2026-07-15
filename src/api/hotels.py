@@ -1,8 +1,8 @@
 from datetime import date
 from fastapi import APIRouter
 from src.api.dependencies import AdminUserDep, DBDep, PaginationDep
-from src.schemas.common import PaginatedResponse
-from src.schemas.hotels import Hotel, HotelAdd, HotelPatch
+from src.schemas.common import PaginatedResponse, SortOrder
+from src.schemas.hotels import Hotel, HotelAdd, HotelPatch, HotelSortBy
 from src.service.hotels import HotelService
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
@@ -16,6 +16,8 @@ async def get_hotels(
     date_to: date,
     title: str | None = None,
     location: str | None = None,
+    sort_by: HotelSortBy | None = None,
+    sort_order: SortOrder | None = None,
 ):
     items, total = await HotelService(db).get_hotels(
         page=pagination.page,
@@ -24,6 +26,8 @@ async def get_hotels(
         date_to=date_to,
         title=title,
         location=location,
+        sort_by=sort_by,
+        sort_order=sort_order,
     )
     return PaginatedResponse(
         items=items, total=total, page=pagination.page, per_page=pagination.per_page

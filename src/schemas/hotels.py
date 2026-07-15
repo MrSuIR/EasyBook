@@ -1,4 +1,12 @@
+from enum import StrEnum
+
 from pydantic import BaseModel, Field, field_validator
+
+
+class HotelSortBy(StrEnum):
+    ID = "id"
+    TITLE = "title"
+    LOCATION = "location"
 
 
 class HotelAdd(BaseModel):

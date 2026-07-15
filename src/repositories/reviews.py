@@ -5,7 +5,8 @@ from src.exceptions import ObjectIntegrityException, ObjectNotFoundException
 from src.models import BookingsOrm, ReviewsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import ReviewDataMapper
-from src.schemas.reviews import ReviewPatch
+from src.schemas.common import SortOrder
+from src.schemas.reviews import ReviewPatch, ReviewSortBy
 
 
 class ReviewsRepository(BaseRepository):
@@ -25,18 +26,28 @@ class ReviewsRepository(BaseRepository):
         ]
 
     async def get_paginated_by_hotel(
-        self, hotel_id: int, limit: int, offset: int
+        self,
+        hotel_id: int,
+        limit: int,
+        offset: int,
+        sort_by: ReviewSortBy,
+        sort_order: SortOrder,
     ):
         filters = RoomsOrm.hotel_id == hotel_id
+        sort_column = {
+            ReviewSortBy.CREATED_AT: ReviewsOrm.created_at,
+            ReviewSortBy.RATING: ReviewsOrm.rating,
+        }[sort_by]
+        order = sort_column.asc if sort_order == SortOrder.ASC else sort_column.desc
         query = (
             select(ReviewsOrm)
             .join(BookingsOrm, BookingsOrm.id == ReviewsOrm.booking_id)
             .join(RoomsOrm, RoomsOrm.id == BookingsOrm.room_id)
             .where(filters)
-            .order_by(ReviewsOrm.created_at.desc(), ReviewsOrm.id.desc())
-            .limit(limit)
-            .offset(offset)
+            .order_by(order())
         )
+        id_order = ReviewsOrm.id.asc if sort_order == SortOrder.ASC else ReviewsOrm.id.desc
+        query = query.order_by(id_order()).limit(limit).offset(offset)
         count_query = (
             select(func.count(ReviewsOrm.id))
             .join(BookingsOrm, BookingsOrm.id == ReviewsOrm.booking_id)

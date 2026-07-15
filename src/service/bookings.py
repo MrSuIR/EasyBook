@@ -4,15 +4,25 @@ from src.exceptions import (
     ForbiddenException,
     ObjectNotFoundException,
 )
-from src.schemas.bookings import BookingAddRequest, BookingCreate
+from src.schemas.bookings import BookingAddRequest, BookingCreate, BookingSortBy
+from src.schemas.common import SortOrder
 from src.schemas.users import User
 from src.service.base import BaseService
 
 
 class BookingService(BaseService):
-    async def get_bookings(self, page: int, per_page: int):
+    async def get_bookings(
+        self,
+        page: int,
+        per_page: int,
+        sort_by: BookingSortBy | None = None,
+        sort_order: SortOrder | None = None,
+    ):
         return await self.db.bookings.get_paginated(
-            limit=per_page, offset=per_page * (page - 1)
+            limit=per_page,
+            offset=per_page * (page - 1),
+            sort_by=sort_by or BookingSortBy.ID,
+            sort_order=sort_order or SortOrder.ASC,
         )
 
     async def get_my_bookings(self, user_id: int):

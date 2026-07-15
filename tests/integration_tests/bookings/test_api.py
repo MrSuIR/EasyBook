@@ -85,3 +85,49 @@ async def test_invalid_booking_dates(client, clean_database):
             },
         )
         assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_admin_booking_sorting_defaults_partial_params_and_tie_breaker(
+    client, admin_client, clean_database
+):
+    room_id = clean_database["room_id"]
+    bookings = []
+    for start_offset in (5, 1, 3):
+        response = await client.post(
+            "/bookings", json=booking_payload(room_id, start_offset, 1)
+        )
+        assert response.status_code == 201
+        bookings.append(response.json())
+
+    default = await admin_client.get("/bookings")
+    assert [item["id"] for item in default.json()["items"]] == [
+        item["id"] for item in bookings
+    ]
+
+    by_checkin = await admin_client.get("/bookings?sort_by=date_from")
+    assert [item["date_from"] for item in by_checkin.json()["items"]] == sorted(
+        item["date_from"] for item in bookings
+    )
+
+    by_price_desc = await admin_client.get(
+        "/bookings?sort_by=price&sort_order=desc"
+    )
+    assert [item["id"] for item in by_price_desc.json()["items"]] == [
+        item["id"] for item in reversed(bookings)
+    ]
+
+    descending_ids = await admin_client.get("/bookings?sort_order=desc")
+    assert [item["id"] for item in descending_ids.json()["items"]] == [
+        item["id"] for item in reversed(bookings)
+    ]
+
+
+@pytest.mark.asyncio
+async def test_booking_sorting_rejects_unknown_values(admin_client, clean_database):
+    for query in ("sort_by=created_at", "sort_order=up"):
+        assert (await admin_client.get(f"/bookings?{query}")).status_code == 422
+    for sort_by in ("id", "date_from", "date_to", "price", "status"):
+        assert (
+            await admin_client.get("/bookings", params={"sort_by": sort_by})
+        ).status_code == 200

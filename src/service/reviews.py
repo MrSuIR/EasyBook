@@ -11,14 +11,20 @@ from src.exceptions import (
     ReviewNotAllowedException,
     ReviewNotFoundException,
 )
-from src.schemas.reviews import ReviewAdd, ReviewCreate, ReviewPatch
+from src.schemas.common import SortOrder
+from src.schemas.reviews import ReviewAdd, ReviewCreate, ReviewPatch, ReviewSortBy
 from src.schemas.users import User
 from src.service.base import BaseService
 
 
 class ReviewService(BaseService):
     async def get_hotel_reviews(
-        self, hotel_id: int, page: int, per_page: int
+        self,
+        hotel_id: int,
+        page: int,
+        per_page: int,
+        sort_by: ReviewSortBy | None = None,
+        sort_order: SortOrder | None = None,
     ):
         try:
             await self.db.hotels.get_one(id=hotel_id)
@@ -28,6 +34,8 @@ class ReviewService(BaseService):
             hotel_id=hotel_id,
             limit=per_page,
             offset=per_page * (page - 1),
+            sort_by=sort_by or ReviewSortBy.CREATED_AT,
+            sort_order=sort_order or SortOrder.DESC,
         )
 
     async def get_my_reviews(self, user_id: int):
