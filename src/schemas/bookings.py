@@ -26,6 +26,10 @@ class BookingAdd(BaseModel):
     status: BookingStatus = BookingStatus.CONFIRMED
 
 
+class BookingSeed(BookingAdd):
+    cancelled_at: datetime | None = None
+
+
 class Booking(BookingAdd):
     id: int
     created_at: datetime
