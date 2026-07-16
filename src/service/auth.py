@@ -20,13 +20,9 @@ class AuthService(BaseService):
         return self.pwd_context.verify(plain_password, hashed_password)
 
     def create_access_token(self, user_id: int) -> str:
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         return jwt.encode(
-            {"sub": str(user_id), "exp": expire},
-            settings.JWT_SECRET_KEY,
-            algorithm=settings.JWT_ALGORITHM,
+            {"sub": str(user_id), "exp": expire}, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
         )
 
     def hashed_password(self, password: str) -> str:
@@ -34,22 +30,12 @@ class AuthService(BaseService):
 
     def decode_token(self, token: str) -> int:
         try:
-            return int(
-                jwt.decode(
-                    token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-                )["sub"]
-            )
-        except (
-            KeyError,
-            TypeError,
-            ValueError,
-            jwt.exceptions.InvalidTokenError,
-        ) as ex:
+            payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+            return int(payload["sub"])
+        except (KeyError, TypeError, ValueError, jwt.exceptions.InvalidTokenError) as ex:
             raise IncorrectTokenException from ex
 
-    async def register_user(
-        self, request_data: UserRequestAdd, role: UserRole = UserRole.CLIENT
-    ):
+    async def register_user(self, request_data: UserRequestAdd, role: UserRole = UserRole.CLIENT):
         try:
             user = await self.db.users.add(
                 UserAdd(
@@ -64,13 +50,14 @@ class AuthService(BaseService):
         return user
 
     async def login_user(self, request_data: UserRequestAdd) -> str:
-        user = await self.db.users.get_user_with_hashed_password(
-            email=str(request_data.email).lower()
-        )
-        if not user or not self.verify_password(
-            request_data.password, user.hashed_password
-        ):
+        user = await self.db.users.get_user_with_hashed_password(email=str(request_data.email).lower())
+        if user is None:
             raise LoginFailedException
+
+        password_is_valid = self.verify_password(request_data.password, user.hashed_password)
+        if not password_is_valid:
+            raise LoginFailedException
+
         return self.create_access_token(user.id)
 
     async def get_me(self, user_id: int):

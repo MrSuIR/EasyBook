@@ -3,6 +3,11 @@ from datetime import date, timedelta
 
 import pytest
 
+from src.constants import BookingStatus
+from src.database import async_session_maker_null_pool
+from src.schemas.bookings import BookingAdd
+from src.utils.db_manager import DBManager
+
 
 def booking_payload(room_id: int, start_offset: int = 1, nights: int = 2):
     start = date.today() + timedelta(days=start_offset)
@@ -49,6 +54,53 @@ async def test_cancel_is_idempotent_frees_room_and_keeps_history(
     assert (await client.post("/bookings", json=payload)).status_code == 201
     history = await client.get("/bookings/me")
     assert any(item["id"] == booking_id for item in history.json())
+
+
+@pytest.mark.asyncio
+async def test_confirmed_booking_cannot_be_cancelled_from_checkin_date(
+    client, clean_database
+):
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+        user = await db.users.get_user_with_hashed_password(email="client@example.com")
+        assert user is not None
+        booking = await db.bookings.add(
+            BookingAdd(
+                room_id=clean_database["room_id"],
+                user_id=user.id,
+                date_from=date.today(),
+                date_to=date.today() + timedelta(days=2),
+                price=2500,
+            )
+        )
+        await db.commit()
+
+    response = await client.post(f"/bookings/{booking.id}/cancel")
+    assert response.status_code == 409
+    assert response.json()["code"] == "booking_cancellation_closed"
+
+
+@pytest.mark.asyncio
+async def test_cancelled_booking_stays_idempotent_after_checkin(
+    client, clean_database
+):
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+        user = await db.users.get_user_with_hashed_password(email="client@example.com")
+        assert user is not None
+        booking = await db.bookings.add(
+            BookingAdd(
+                room_id=clean_database["room_id"],
+                user_id=user.id,
+                date_from=date.today() - timedelta(days=2),
+                date_to=date.today() - timedelta(days=1),
+                price=2500,
+                status=BookingStatus.CANCELLED,
+            )
+        )
+        await db.commit()
+
+    response = await client.post(f"/bookings/{booking.id}/cancel")
+    assert response.status_code == 200
+    assert response.json()["status"] == "cancelled"
 
 
 @pytest.mark.asyncio

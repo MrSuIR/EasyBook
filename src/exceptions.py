@@ -85,6 +85,12 @@ class BookingHasReviewException(EasyBookException):
     detail = "Нельзя отменить бронирование, для которого оставлен отзыв"
 
 
+class BookingCancellationClosedException(EasyBookException):
+    status_code = 409
+    code = "booking_cancellation_closed"
+    detail = "Бронирование можно отменить только до даты заезда"
+
+
 class UserAlreadyExistsException(ObjectAlreadyExistException):
     code = "user_already_exists"
     detail = "Пользователь уже существует"

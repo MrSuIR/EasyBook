@@ -19,14 +19,7 @@ DEMO_USERS = (
     ("client@example.com", UserRole.CLIENT),
     ("traveler@example.com", UserRole.CLIENT),
 )
-DEMO_FACILITIES = (
-    "Wi-Fi",
-    "Breakfast",
-    "Parking",
-    "Pool",
-    "Spa",
-    "Air conditioning",
-)
+DEMO_FACILITIES = ("Wi-Fi", "Breakfast", "Parking", "Pool", "Spa", "Air conditioning")
 DEMO_HOTELS = (
     (
         "Metropol Demo",
@@ -72,9 +65,7 @@ class DemoSeedSummary:
 class DemoSeedService(BaseService):
     async def seed(self, today: date | None = None) -> DemoSeedSummary:
         if settings.MODE == "PROD":
-            raise DemoSeedNotAllowedError(
-                "Demo data cannot be created when MODE=PROD"
-            )
+            raise DemoSeedNotAllowedError("Demo data cannot be created when MODE=PROD")
 
         users = await self._ensure_users()
         facilities = await self._ensure_facilities()
@@ -98,29 +89,18 @@ class DemoSeedService(BaseService):
             existing = await self.db.users.get_user_with_hashed_password(email=email)
             if existing is None:
                 users[email] = await self.db.users.add(
-                    UserAdd(
-                        email=email,
-                        hashed_password=auth.hashed_password(DEMO_PASSWORD),
-                        role=role,
-                    )
+                    UserAdd(email=email, hashed_password=auth.hashed_password(DEMO_PASSWORD), role=role)
                 )
                 continue
 
-            password_matches = auth.verify_password(
-                DEMO_PASSWORD, existing.hashed_password
-            )
+            password_matches = auth.verify_password(DEMO_PASSWORD, existing.hashed_password)
             if existing.role != role or not password_matches:
+                password_hash = existing.hashed_password
+                if not password_matches:
+                    password_hash = auth.hashed_password(DEMO_PASSWORD)
+
                 existing = await self.db.users.edit(
-                    UserAdd(
-                        email=email,
-                        hashed_password=(
-                            existing.hashed_password
-                            if password_matches
-                            else auth.hashed_password(DEMO_PASSWORD)
-                        ),
-                        role=role,
-                    ),
-                    id=existing.id,
+                    UserAdd(email=email, hashed_password=password_hash, role=role), id=existing.id
                 )
             users[email] = existing
         return users
@@ -129,11 +109,11 @@ class DemoSeedService(BaseService):
         facilities = {}
         for title in DEMO_FACILITIES:
             matches = await self.db.facilities.get_filtered(title=title)
-            facilities[title] = (
-                min(matches, key=lambda item: item.id)
-                if matches
-                else await self.db.facilities.add(FacilityAdd(title=title))
-            )
+            if matches:
+                facility = min(matches, key=lambda item: item.id)
+            else:
+                facility = await self.db.facilities.add(FacilityAdd(title=title))
+            facilities[title] = facility
         return facilities
 
     async def _ensure_catalog(
@@ -152,9 +132,7 @@ class DemoSeedService(BaseService):
             hotels[title] = hotel
 
             for room_title, description, price, quantity, facility_titles in room_specs:
-                room_matches = await self.db.rooms.get_filtered(
-                    hotel_id=hotel.id, title=room_title
-                )
+                room_matches = await self.db.rooms.get_filtered(hotel_id=hotel.id, title=room_title)
                 room_data = RoomAdd(
                     hotel_id=hotel.id,
                     title=room_title,
@@ -173,9 +151,7 @@ class DemoSeedService(BaseService):
                 rooms[(title, room_title)] = room
         return hotels, rooms
 
-    async def _ensure_bookings(
-        self, users, rooms, today: date
-    ) -> dict[str, Booking]:
+    async def _ensure_bookings(self, users, rooms, today: date) -> dict[str, Booking]:
         specs = (
             (
                 "completed",
@@ -212,34 +188,33 @@ class DemoSeedService(BaseService):
         )
         bookings = {}
         for name, user_id, room, date_from, date_to, should_cancel in specs:
-            matches = await self.db.bookings.get_filtered(
-                user_id=user_id, room_id=room.id
-            )
-            existing = min(matches, key=lambda item: item.id) if matches else None
+            matches = await self.db.bookings.get_filtered(user_id=user_id, room_id=room.id)
+            existing = None
+            if matches:
+                existing = min(matches, key=lambda item: item.id)
+
             cancelled_at = None
             if should_cancel:
-                cancelled_at = (
-                    existing.cancelled_at
-                    if existing is not None and existing.cancelled_at is not None
-                    else datetime.now(timezone.utc)
-                )
+                existing_cancellation_date = None
+                if existing is not None:
+                    existing_cancellation_date = existing.cancelled_at
+                cancelled_at = existing_cancellation_date or datetime.now(timezone.utc)
+
+            status = BookingStatus.CONFIRMED
+            if should_cancel:
+                status = BookingStatus.CANCELLED
+
             booking_data = BookingSeed(
                 user_id=user_id,
                 room_id=room.id,
                 date_from=date_from,
                 date_to=date_to,
                 price=room.price,
-                status=(
-                    BookingStatus.CANCELLED
-                    if should_cancel
-                    else BookingStatus.CONFIRMED
-                ),
+                status=status,
                 cancelled_at=cancelled_at,
             )
             if existing is not None:
-                booking = await self.db.bookings.edit(
-                    booking_data, id=existing.id
-                )
+                booking = await self.db.bookings.edit(booking_data, id=existing.id)
             else:
                 booking = await self.db.bookings.add(booking_data)
             bookings[name] = booking
@@ -249,23 +224,12 @@ class DemoSeedService(BaseService):
         matches = await self.db.reviews.get_filtered(booking_id=booking.id)
         if not matches:
             await self.db.reviews.add(
-                ReviewAdd(
-                    booking_id=booking.id,
-                    rating=5,
-                    comment="Excellent location and friendly staff",
-                )
+                ReviewAdd(booking_id=booking.id, rating=5, comment="Excellent location and friendly staff")
             )
             return 1
         review = min(matches, key=lambda item: item.id)
-        if (
-            review.rating != 5
-            or review.comment != "Excellent location and friendly staff"
-        ):
+        if review.rating != 5 or review.comment != "Excellent location and friendly staff":
             await self.db.reviews.edit_review(
-                review.id,
-                ReviewPatch(
-                    rating=5,
-                    comment="Excellent location and friendly staff",
-                ),
+                review.id, ReviewPatch(rating=5, comment="Excellent location and friendly staff")
             )
         return 1
