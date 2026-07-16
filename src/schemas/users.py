@@ -11,7 +11,9 @@ class UserRequestAdd(BaseModel):
     @field_validator("email", mode="before")
     @classmethod
     def normalize_email(cls, value):
-        return value.strip().lower() if isinstance(value, str) else value
+        if isinstance(value, str):
+            return value.strip().lower()
+        return value
 
 
 class UserAdd(BaseModel):

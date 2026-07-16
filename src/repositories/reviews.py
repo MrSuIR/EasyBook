@@ -5,6 +5,7 @@ from src.exceptions import ObjectIntegrityException, ObjectNotFoundException
 from src.models import BookingsOrm, ReviewsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import ReviewDataMapper
+from src.repositories.utils import sort_expression
 from src.schemas.common import SortOrder
 from src.schemas.reviews import ReviewPatch, ReviewSortBy
 
@@ -21,38 +22,33 @@ class ReviewsRepository(BaseRepository):
             .order_by(ReviewsOrm.created_at.desc(), ReviewsOrm.id.desc())
         )
         result = await self.session.execute(query)
-        return [
-            self.mapper.map_to_domain_entity(item) for item in result.scalars().all()
-        ]
+        return [self.mapper.map_to_domain_entity(item) for item in result.scalars().all()]
 
     async def get_paginated_by_hotel(
-        self,
-        hotel_id: int,
-        limit: int,
-        offset: int,
-        sort_by: ReviewSortBy,
-        sort_order: SortOrder,
+        self, hotel_id: int, limit: int, offset: int, sort_by: ReviewSortBy, sort_order: SortOrder
     ):
-        filters = RoomsOrm.hotel_id == hotel_id
-        sort_column = {
+        hotel_filter = RoomsOrm.hotel_id == hotel_id
+        sort_columns = {
             ReviewSortBy.CREATED_AT: ReviewsOrm.created_at,
             ReviewSortBy.RATING: ReviewsOrm.rating,
-        }[sort_by]
-        order = sort_column.asc if sort_order == SortOrder.ASC else sort_column.desc
+        }
+        primary_sort = sort_expression(sort_columns[sort_by], sort_order)
+        id_sort = sort_expression(ReviewsOrm.id, sort_order)
+
         query = (
             select(ReviewsOrm)
             .join(BookingsOrm, BookingsOrm.id == ReviewsOrm.booking_id)
             .join(RoomsOrm, RoomsOrm.id == BookingsOrm.room_id)
-            .where(filters)
-            .order_by(order())
+            .where(hotel_filter)
+            .order_by(primary_sort, id_sort)
+            .limit(limit)
+            .offset(offset)
         )
-        id_order = ReviewsOrm.id.asc if sort_order == SortOrder.ASC else ReviewsOrm.id.desc
-        query = query.order_by(id_order()).limit(limit).offset(offset)
         count_query = (
             select(func.count(ReviewsOrm.id))
             .join(BookingsOrm, BookingsOrm.id == ReviewsOrm.booking_id)
             .join(RoomsOrm, RoomsOrm.id == BookingsOrm.room_id)
-            .where(filters)
+            .where(hotel_filter)
         )
         items = (await self.session.execute(query)).scalars().all()
         total = (await self.session.execute(count_query)).scalar_one()
@@ -65,12 +61,7 @@ class ReviewsRepository(BaseRepository):
     async def edit_review(self, review_id: int, data: ReviewPatch):
         values = data.model_dump(exclude_unset=True)
         values["updated_at"] = func.now()
-        query = (
-            update(ReviewsOrm)
-            .where(ReviewsOrm.id == review_id)
-            .values(**values)
-            .returning(ReviewsOrm)
-        )
+        query = update(ReviewsOrm).where(ReviewsOrm.id == review_id).values(**values).returning(ReviewsOrm)
         try:
             model = (await self.session.execute(query)).scalars().one_or_none()
         except IntegrityError as ex:

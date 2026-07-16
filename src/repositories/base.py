@@ -4,11 +4,7 @@ from sqlalchemy import delete, func, insert, select, update
 from pydantic import BaseModel
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from src.exceptions import (
-    ObjectNotFoundException,
-    ObjectAlreadyExistException,
-    ObjectIntegrityException,
-)
+from src.exceptions import ObjectNotFoundException, ObjectAlreadyExistException, ObjectIntegrityException
 
 
 class BaseRepository:
@@ -18,23 +14,16 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
-    async def get_filtered(self, *filter, **filter_by):
-        query = select(self.model).filter(*filter).filter_by(**filter_by)
+    async def get_filtered(self, *filters, **filter_by):
+        query = select(self.model).filter(*filters).filter_by(**filter_by)
         result = await self.session.execute(query)
-        return [
-            self.mapper.map_to_domain_entity(model) for model in result.scalars().all()
-        ]
+        return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
 
     async def get_all(self, *args, **kwargs):
         return await self.get_filtered()
 
-    async def count(self, *filter, **filter_by) -> int:
-        query = (
-            select(func.count())
-            .select_from(self.model)
-            .filter(*filter)
-            .filter_by(**filter_by)
-        )
+    async def count(self, *filters, **filter_by) -> int:
+        query = select(func.count()).select_from(self.model).filter(*filters).filter_by(**filter_by)
         return (await self.session.execute(query)).scalar_one()
 
     async def get_one(self, **filter_by):

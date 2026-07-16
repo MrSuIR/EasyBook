@@ -9,6 +9,7 @@ from sqlalchemy import text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src.api.auth import limiter, router as router_auth
+from src.api.analytics import router as router_analytics
 from src.api.bookings import router as router_bookings
 from src.api.facilities import router as router_facilities
 from src.api.hotels import router as router_hotels
@@ -89,6 +90,7 @@ app.include_router(router_bookings)
 app.include_router(router_facilities)
 app.include_router(router_images)
 app.include_router(router_reviews)
+app.include_router(router_analytics)
 app.mount("/static/images", StaticFiles(directory=settings.IMAGE_DIR), name="images")
 
 
