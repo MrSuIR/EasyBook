@@ -16,9 +16,7 @@ class RoomsFacilitiesRepository(BaseRepository):
     mapper = RoomFacilityDataMapper
 
     async def set_room_facilities(self, facilities_ids: list[int], room_id: int):
-        current_ids_facilities_query = select(RoomsFacilitiesOrm.facility_id).filter_by(
-            room_id=room_id
-        )
+        current_ids_facilities_query = select(RoomsFacilitiesOrm.facility_id).filter_by(room_id=room_id)
         result = await self.session.execute(current_ids_facilities_query)
         current_facilities_ids = result.scalars().all()
 
@@ -27,8 +25,7 @@ class RoomsFacilitiesRepository(BaseRepository):
 
         if ids_to_delete:
             ids_to_delete_stmt = delete(RoomsFacilitiesOrm).filter(
-                RoomsFacilitiesOrm.room_id == room_id,
-                RoomsFacilitiesOrm.facility_id.in_(ids_to_delete),
+                RoomsFacilitiesOrm.room_id == room_id, RoomsFacilitiesOrm.facility_id.in_(ids_to_delete)
             )
             await self.session.execute(ids_to_delete_stmt)
 
@@ -41,7 +38,8 @@ class RoomsFacilitiesRepository(BaseRepository):
     async def existing_ids(self, facilities_ids: list[int]) -> set[int]:
         if not facilities_ids:
             return set()
-        query = select(FacilitiesOrm.id).where(
-            FacilitiesOrm.id.in_(set(facilities_ids))
-        )
-        return set((await self.session.execute(query)).scalars().all())
+
+        unique_facility_ids = set(facilities_ids)
+        query = select(FacilitiesOrm.id).where(FacilitiesOrm.id.in_(unique_facility_ids))
+        result = await self.session.execute(query)
+        return set(result.scalars().all())

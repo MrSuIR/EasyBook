@@ -29,7 +29,9 @@ class Settings(BaseSettings):
 
     @property
     def cookie_secure(self) -> bool:
-        return self.COOKIE_SECURE if self.COOKIE_SECURE is not None else self.MODE == "PROD"
+        if self.COOKIE_SECURE is not None:
+            return self.COOKIE_SECURE
+        return self.MODE == "PROD"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

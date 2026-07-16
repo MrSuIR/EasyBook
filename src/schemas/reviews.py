@@ -43,8 +43,11 @@ class ReviewPatch(ReviewCommentMixin):
     def validate_patch(self):
         if not self.model_fields_set:
             raise ValueError("Нужно передать rating или comment")
-        if any(getattr(self, field) is None for field in self.model_fields_set):
+
+        contains_null = any(getattr(self, field_name) is None for field_name in self.model_fields_set)
+        if contains_null:
             raise ValueError("Поля отзыва не могут быть null")
+
         return self
 
 

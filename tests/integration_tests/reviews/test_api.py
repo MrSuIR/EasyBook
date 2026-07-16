@@ -193,14 +193,11 @@ async def test_concurrent_review_and_cancellation_preserve_invariant(
         client.post("/reviews", json=review_payload(booking.id)),
         client.post(f"/bookings/{booking.id}/cancel"),
     )
-    assert (review_response.status_code, cancel_response.status_code) in {
-        (201, 409),
-        (409, 200),
+    assert (review_response.status_code, cancel_response.status_code) == (201, 409)
+    assert cancel_response.json()["code"] in {
+        "booking_has_review",
+        "booking_cancellation_closed",
     }
-    if review_response.status_code == 201:
-        assert cancel_response.json()["code"] == "booking_has_review"
-    else:
-        assert review_response.json()["code"] == "review_not_allowed"
 
 
 @pytest.mark.asyncio

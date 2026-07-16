@@ -3,6 +3,7 @@ from sqlalchemy import func, select, update
 from src.constants import BookingStatus
 from src.exceptions import (
     AllRoomsAreBookedException,
+    BookingCancellationClosedException,
     BookingHasReviewException,
     BookingNotFoundException,
     RoomNotFoundException,
@@ -10,6 +11,7 @@ from src.exceptions import (
 from src.models import BookingsOrm, ReviewsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import BookingDataMapper
+from src.repositories.utils import sort_expression
 from src.schemas.bookings import BookingAdd, BookingCreate, BookingSortBy
 from src.schemas.common import SortOrder
 
@@ -19,17 +21,7 @@ class BookingsRepository(BaseRepository):
     mapper = BookingDataMapper
 
     async def get_for_update(self, booking_id: int):
-        booking = (
-            (
-                await self.session.execute(
-                    select(BookingsOrm)
-                    .where(BookingsOrm.id == booking_id)
-                    .with_for_update()
-                )
-            )
-            .scalars()
-            .one_or_none()
-        )
+        booking = await self._get_locked_booking(booking_id)
         if booking is None:
             raise BookingNotFoundException
         return self.mapper.map_to_domain_entity(booking)
@@ -37,66 +29,49 @@ class BookingsRepository(BaseRepository):
     async def get_bookings_with_today_checkin(self):
         result = await self.session.execute(
             select(BookingsOrm).filter(
-                BookingsOrm.date_from == date.today(),
-                BookingsOrm.status == BookingStatus.CONFIRMED.value,
+                BookingsOrm.date_from == date.today(), BookingsOrm.status == BookingStatus.CONFIRMED.value
             )
         )
-        return [
-            self.mapper.map_to_domain_entity(item) for item in result.scalars().all()
-        ]
+        return [self.mapper.map_to_domain_entity(item) for item in result.scalars().all()]
 
-    async def get_paginated(
-        self,
-        limit: int,
-        offset: int,
-        sort_by: BookingSortBy,
-        sort_order: SortOrder,
-    ):
-        sort_column = {
+    async def get_paginated(self, limit: int, offset: int, sort_by: BookingSortBy, sort_order: SortOrder):
+        sort_columns = {
             BookingSortBy.ID: BookingsOrm.id,
             BookingSortBy.DATE_FROM: BookingsOrm.date_from,
             BookingSortBy.DATE_TO: BookingsOrm.date_to,
             BookingSortBy.PRICE: BookingsOrm.price,
             BookingSortBy.STATUS: BookingsOrm.status,
-        }[sort_by]
-        order = sort_column.asc if sort_order == SortOrder.ASC else sort_column.desc
-        query = select(BookingsOrm).order_by(order())
+        }
+        primary_sort = sort_expression(sort_columns[sort_by], sort_order)
+        query = select(BookingsOrm).order_by(primary_sort)
+
         if sort_by != BookingSortBy.ID:
-            id_order = BookingsOrm.id.asc if sort_order == SortOrder.ASC else BookingsOrm.id.desc
-            query = query.order_by(id_order())
-        result = await self.session.execute(
-            query.limit(limit).offset(offset)
-        )
-        return [
-            self.mapper.map_to_domain_entity(item) for item in result.scalars().all()
-        ], await self.count()
+            id_sort = sort_expression(BookingsOrm.id, sort_order)
+            query = query.order_by(id_sort)
+
+        result = await self.session.execute(query.limit(limit).offset(offset))
+        return [self.mapper.map_to_domain_entity(item) for item in result.scalars().all()], await self.count()
 
     async def add_booking(self, data: BookingCreate):
-        room = (
-            (
-                await self.session.execute(
-                    select(RoomsOrm)
-                    .where(RoomsOrm.id == data.room_id)
-                    .with_for_update()
-                )
-            )
-            .scalars()
-            .one_or_none()
-        )
+        room_query = select(RoomsOrm).where(RoomsOrm.id == data.room_id).with_for_update()
+        room = (await self.session.execute(room_query)).scalars().one_or_none()
         if room is None:
             raise RoomNotFoundException
-        count = (
-            await self.session.execute(
-                select(func.count(BookingsOrm.id)).where(
-                    BookingsOrm.room_id == data.room_id,
-                    BookingsOrm.status == BookingStatus.CONFIRMED.value,
-                    BookingsOrm.date_from < data.date_to,
-                    BookingsOrm.date_to > data.date_from,
-                )
-            )
-        ).scalar_one()
-        if count >= room.quantity:
+
+        booking_is_confirmed = BookingsOrm.status == BookingStatus.CONFIRMED.value
+        booking_starts_before_checkout = BookingsOrm.date_from < data.date_to
+        booking_ends_after_checkin = BookingsOrm.date_to > data.date_from
+        overlapping_bookings_query = select(func.count(BookingsOrm.id)).where(
+            BookingsOrm.room_id == data.room_id,
+            booking_is_confirmed,
+            booking_starts_before_checkout,
+            booking_ends_after_checkin,
+        )
+        overlapping_bookings_count = (await self.session.execute(overlapping_bookings_query)).scalar_one()
+
+        if overlapping_bookings_count >= room.quantity:
             raise AllRoomsAreBookedException
+
         return await self.add(
             BookingAdd(
                 room_id=data.room_id,
@@ -108,40 +83,32 @@ class BookingsRepository(BaseRepository):
         )
 
     async def cancel(self, booking_id: int):
-        booking = (
-            (
-                await self.session.execute(
-                    select(BookingsOrm)
-                    .where(BookingsOrm.id == booking_id)
-                    .with_for_update()
-                )
-            )
-            .scalars()
-            .one_or_none()
-        )
+        booking = await self._get_locked_booking(booking_id)
         if booking is None:
             raise BookingNotFoundException
-        await self.session.execute(
-            select(RoomsOrm).where(RoomsOrm.id == booking.room_id).with_for_update()
-        )
+
+        await self.session.execute(select(RoomsOrm).where(RoomsOrm.id == booking.room_id).with_for_update())
+
         if booking.status == BookingStatus.CANCELLED.value:
             return self.mapper.map_to_domain_entity(booking)
+
         review_id = (
-            await self.session.execute(
-                select(ReviewsOrm.id).where(ReviewsOrm.booking_id == booking_id)
-            )
+            await self.session.execute(select(ReviewsOrm.id).where(ReviewsOrm.booking_id == booking_id))
         ).scalar_one_or_none()
         if review_id is not None:
             raise BookingHasReviewException
+
+        if date.today() >= booking.date_from:
+            raise BookingCancellationClosedException
+
         stmt = (
             update(BookingsOrm)
             .where(BookingsOrm.id == booking_id)
-            .values(
-                status=BookingStatus.CANCELLED.value,
-                cancelled_at=datetime.now(timezone.utc),
-            )
+            .values(status=BookingStatus.CANCELLED.value, cancelled_at=datetime.now(timezone.utc))
             .returning(BookingsOrm)
         )
-        return self.mapper.map_to_domain_entity(
-            (await self.session.execute(stmt)).scalars().one()
-        )
+        return self.mapper.map_to_domain_entity((await self.session.execute(stmt)).scalars().one())
+
+    async def _get_locked_booking(self, booking_id: int):
+        query = select(BookingsOrm).where(BookingsOrm.id == booking_id).with_for_update()
+        return (await self.session.execute(query)).scalars().one_or_none()

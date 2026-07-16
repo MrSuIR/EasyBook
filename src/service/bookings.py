@@ -1,9 +1,5 @@
 from src.constants import UserRole
-from src.exceptions import (
-    BookingNotFoundException,
-    ForbiddenException,
-    ObjectNotFoundException,
-)
+from src.exceptions import BookingNotFoundException, ForbiddenException, ObjectNotFoundException
 from src.schemas.bookings import BookingAddRequest, BookingCreate, BookingSortBy
 from src.schemas.common import SortOrder
 from src.schemas.users import User
@@ -37,15 +33,12 @@ class BookingService(BaseService):
         return booking
 
     async def add_booking(self, data: BookingAddRequest, user_id: int):
-        booking = await self.db.bookings.add_booking(
-            BookingCreate(user_id=user_id, **data.model_dump())
-        )
+        booking = await self.db.bookings.add_booking(BookingCreate(user_id=user_id, **data.model_dump()))
         await self.db.commit()
         return booking
 
     async def cancel_booking(self, booking_id: int, actor: User):
-        booking = await self.get_booking(booking_id, actor)
-        self._check_access(booking.user_id, actor)
+        await self.get_booking(booking_id, actor)
         result = await self.db.bookings.cancel(booking_id)
         await self.db.commit()
         return result

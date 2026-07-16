@@ -50,27 +50,22 @@ class ReviewService(BaseService):
     async def add_review(self, data: ReviewCreate, actor: User):
         booking = await self.db.bookings.get_for_update(data.booking_id)
         self._check_owner(booking.user_id, actor.id)
-        if (
-            booking.status != BookingStatus.CONFIRMED
-            or date.today() < booking.date_to
-        ):
+
+        booking_is_confirmed = booking.status == BookingStatus.CONFIRMED
+        stay_is_completed = date.today() >= booking.date_to
+        if not booking_is_confirmed or not stay_is_completed:
             raise ReviewNotAllowedException
+
         try:
             review = await self.db.reviews.add(
-                ReviewAdd(
-                    booking_id=data.booking_id,
-                    rating=data.rating,
-                    comment=data.comment,
-                )
+                ReviewAdd(booking_id=data.booking_id, rating=data.rating, comment=data.comment)
             )
         except ObjectAlreadyExistException as ex:
             raise ReviewAlreadyExistsException from ex
         await self.db.commit()
         return review
 
-    async def edit_review(
-        self, review_id: int, data: ReviewPatch, actor: User
-    ):
+    async def edit_review(self, review_id: int, data: ReviewPatch, actor: User):
         await self.get_review(review_id, actor)
         try:
             review = await self.db.reviews.edit_review(review_id, data)
