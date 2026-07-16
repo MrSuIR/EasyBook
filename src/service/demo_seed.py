@@ -26,33 +26,122 @@ DEMO_FACILITIES = (
     "Pool",
     "Spa",
     "Air conditioning",
+    "Restaurant",
+    "Fitness center",
+    "Airport transfer",
+    "Pet friendly",
+    "Room service",
+    "Family rooms",
 )
-DEMO_HOTELS = (
-    (
-        "Metropol Demo",
-        "Moscow",
-        (
-            ("Standard", "A practical room for two guests", 4500, 4, ("Wi-Fi", "Breakfast")),
-            ("Business", "A quiet room with a work area", 6800, 2, ("Wi-Fi", "Breakfast", "Parking")),
-        ),
-    ),
-    (
-        "Nevsky Demo",
-        "Saint Petersburg",
-        (
-            ("Comfort", "A room overlooking the city", 5200, 3, ("Wi-Fi", "Air conditioning")),
-            ("Suite", "A spacious suite with a lounge", 9500, 1, ("Wi-Fi", "Breakfast", "Spa")),
-        ),
-    ),
-    (
-        "Volga Demo",
-        "Kazan",
-        (
-            ("Economy", "A compact room for a short stay", 3000, 5, ("Wi-Fi", "Parking")),
-            ("Family", "A family room for up to four guests", 7400, 2, ("Wi-Fi", "Pool", "Parking")),
-        ),
-    ),
+DEMO_CITIES = (
+    "Москва",
+    "Санкт-Петербург",
+    "Казань",
+    "Сочи",
+    "Калининград",
+    "Нижний Новгород",
+    "Ярославль",
+    "Владивосток",
+    "Екатеринбург",
+    "Новосибирск",
+    "Самара",
+    "Тула",
+    "Псков",
+    "Великий Новгород",
+    "Иркутск",
+    "Краснодар",
+    "Ростов-на-Дону",
+    "Пермь",
+    "Уфа",
+    "Мурманск",
 )
+DEMO_REVIEW_COMMENTS = (
+    "Отличное расположение, чистый номер и внимательный персонал",
+    "Удобная кровать, хороший завтрак и спокойная атмосфера",
+    "Всё прошло отлично, обязательно вернёмся в следующую поездку",
+    "Красивый интерьер и быстрый сервис без лишней суеты",
+    "Хороший вариант для выходных: тихо, уютно и близко к центру",
+)
+
+
+def _build_demo_hotels():
+    legacy_hotels = (
+        (
+            "Metropol Demo",
+            "Москва",
+            (
+                ("Standard", "A practical room for two guests", 4500, 4, ("Wi-Fi", "Breakfast")),
+                ("Business", "A quiet room with a work area", 6800, 2, ("Wi-Fi", "Breakfast", "Parking")),
+                (
+                    "Suite",
+                    "A spacious suite for a longer city stay",
+                    9800,
+                    2,
+                    ("Wi-Fi", "Breakfast", "Spa", "Room service"),
+                ),
+            ),
+        ),
+        (
+            "Nevsky Demo",
+            "Санкт-Петербург",
+            (
+                ("Comfort", "A room overlooking the city", 5200, 3, ("Wi-Fi", "Air conditioning")),
+                ("Suite", "A spacious suite with a lounge", 9500, 1, ("Wi-Fi", "Breakfast", "Spa")),
+                (
+                    "Standard",
+                    "A bright room near the historic center",
+                    6100,
+                    4,
+                    ("Wi-Fi", "Breakfast", "Restaurant"),
+                ),
+            ),
+        ),
+        (
+            "Volga Demo",
+            "Казань",
+            (
+                ("Economy", "A compact room for a short stay", 3000, 5, ("Wi-Fi", "Parking")),
+                ("Family", "A family room for up to four guests", 7400, 2, ("Wi-Fi", "Pool", "Parking")),
+                (
+                    "Suite",
+                    "A suite with a separate lounge area",
+                    8700,
+                    2,
+                    ("Wi-Fi", "Breakfast", "Family rooms"),
+                ),
+            ),
+        ),
+    )
+    generated_hotels = []
+    room_titles = ("Standard", "Comfort", "Suite")
+    descriptions = (
+        "Светлый номер для короткой поездки или деловой остановки",
+        "Просторный номер с рабочей зоной и местом для отдыха",
+        "Большой номер с гостиной и расширенным набором удобств",
+    )
+    facility_sets = (
+        ("Wi-Fi", "Breakfast", "Air conditioning"),
+        ("Wi-Fi", "Parking", "Restaurant", "Fitness center"),
+        ("Wi-Fi", "Breakfast", "Spa", "Room service", "Airport transfer"),
+    )
+    for hotel_number in range(4, 101):
+        city = DEMO_CITIES[(hotel_number - 4) % len(DEMO_CITIES)]
+        base_price = 3200 + (hotel_number % 12) * 430
+        room_specs = tuple(
+            (
+                room_title,
+                descriptions[room_index],
+                base_price + room_index * 2600,
+                2 + (hotel_number + room_index) % 7,
+                facility_sets[room_index],
+            )
+            for room_index, room_title in enumerate(room_titles)
+        )
+        generated_hotels.append((f"EasyBook {city} {hotel_number:03d}", city, room_specs))
+    return legacy_hotels + tuple(generated_hotels)
+
+
+DEMO_HOTELS = _build_demo_hotels()
 
 
 class DemoSeedNotAllowedError(RuntimeError):
@@ -72,15 +161,14 @@ class DemoSeedSummary:
 class DemoSeedService(BaseService):
     async def seed(self, today: date | None = None) -> DemoSeedSummary:
         if settings.MODE == "PROD":
-            raise DemoSeedNotAllowedError(
-                "Demo data cannot be created when MODE=PROD"
-            )
+            raise DemoSeedNotAllowedError("Demo data cannot be created when MODE=PROD")
 
         users = await self._ensure_users()
         facilities = await self._ensure_facilities()
         hotels, rooms = await self._ensure_catalog(facilities)
-        bookings = await self._ensure_bookings(users, rooms, today or date.today())
-        review_count = await self._ensure_review(bookings["completed"])
+        seed_today = today or date.today()
+        bookings = await self._ensure_bookings(users, rooms, seed_today)
+        review_count = await self._ensure_reviews(bookings, seed_today)
         await self.db.commit()
         return DemoSeedSummary(
             users=len(users),
@@ -98,17 +186,11 @@ class DemoSeedService(BaseService):
             existing = await self.db.users.get_user_with_hashed_password(email=email)
             if existing is None:
                 users[email] = await self.db.users.add(
-                    UserAdd(
-                        email=email,
-                        hashed_password=auth.hashed_password(DEMO_PASSWORD),
-                        role=role,
-                    )
+                    UserAdd(email=email, hashed_password=auth.hashed_password(DEMO_PASSWORD), role=role)
                 )
                 continue
 
-            password_matches = auth.verify_password(
-                DEMO_PASSWORD, existing.hashed_password
-            )
+            password_matches = auth.verify_password(DEMO_PASSWORD, existing.hashed_password)
             if existing.role != role or not password_matches:
                 existing = await self.db.users.edit(
                     UserAdd(
@@ -152,9 +234,7 @@ class DemoSeedService(BaseService):
             hotels[title] = hotel
 
             for room_title, description, price, quantity, facility_titles in room_specs:
-                room_matches = await self.db.rooms.get_filtered(
-                    hotel_id=hotel.id, title=room_title
-                )
+                room_matches = await self.db.rooms.get_filtered(hotel_id=hotel.id, title=room_title)
                 room_data = RoomAdd(
                     hotel_id=hotel.id,
                     title=room_title,
@@ -173,10 +253,8 @@ class DemoSeedService(BaseService):
                 rooms[(title, room_title)] = room
         return hotels, rooms
 
-    async def _ensure_bookings(
-        self, users, rooms, today: date
-    ) -> dict[str, Booking]:
-        specs = (
+    async def _ensure_bookings(self, users, rooms, today: date) -> dict[str, Booking]:
+        legacy_specs = (
             (
                 "completed",
                 users["client@example.com"].id,
@@ -210,11 +288,43 @@ class DemoSeedService(BaseService):
                 True,
             ),
         )
+        legacy_room_keys = {
+            ("Metropol Demo", "Standard"),
+            ("Metropol Demo", "Business"),
+            ("Nevsky Demo", "Comfort"),
+            ("Volga Demo", "Family"),
+        }
+        generated_specs = []
+        generated_index = 0
+        for room_key, room in rooms.items():
+            if room_key in legacy_room_keys:
+                continue
+            pattern = generated_index % 5
+            user_email = "client@example.com" if generated_index % 2 == 0 else "traveler@example.com"
+            if pattern in (0, 4):
+                date_from = today - timedelta(days=10 + generated_index % 45)
+                date_to = date_from + timedelta(days=2 + generated_index % 4)
+                should_cancel = False
+            else:
+                date_from = today + timedelta(days=1 + generated_index % 60)
+                date_to = date_from + timedelta(days=2 + generated_index % 5)
+                should_cancel = pattern == 3
+            generated_specs.append(
+                (
+                    f"catalog-{generated_index:03d}",
+                    users[user_email].id,
+                    room,
+                    date_from,
+                    date_to,
+                    should_cancel,
+                )
+            )
+            generated_index += 1
+
+        specs = legacy_specs + tuple(generated_specs)
         bookings = {}
         for name, user_id, room, date_from, date_to, should_cancel in specs:
-            matches = await self.db.bookings.get_filtered(
-                user_id=user_id, room_id=room.id
-            )
+            matches = await self.db.bookings.get_filtered(user_id=user_id, room_id=room.id)
             existing = min(matches, key=lambda item: item.id) if matches else None
             cancelled_at = None
             if should_cancel:
@@ -229,43 +339,34 @@ class DemoSeedService(BaseService):
                 date_from=date_from,
                 date_to=date_to,
                 price=room.price,
-                status=(
-                    BookingStatus.CANCELLED
-                    if should_cancel
-                    else BookingStatus.CONFIRMED
-                ),
+                status=(BookingStatus.CANCELLED if should_cancel else BookingStatus.CONFIRMED),
                 cancelled_at=cancelled_at,
             )
             if existing is not None:
-                booking = await self.db.bookings.edit(
-                    booking_data, id=existing.id
-                )
+                booking = await self.db.bookings.edit(booking_data, id=existing.id)
             else:
                 booking = await self.db.bookings.add(booking_data)
             bookings[name] = booking
         return bookings
 
-    async def _ensure_review(self, booking: Booking) -> int:
-        matches = await self.db.reviews.get_filtered(booking_id=booking.id)
-        if not matches:
-            await self.db.reviews.add(
-                ReviewAdd(
-                    booking_id=booking.id,
-                    rating=5,
-                    comment="Excellent location and friendly staff",
-                )
+    async def _ensure_reviews(self, bookings: dict[str, Booking], today: date) -> int:
+        count = 0
+        for index, (name, booking) in enumerate(bookings.items()):
+            if booking.status != BookingStatus.CONFIRMED or booking.date_to > today:
+                continue
+            rating = 5 if name == "completed" else 3 + index % 3
+            comment = (
+                "Excellent location and friendly staff"
+                if name == "completed"
+                else DEMO_REVIEW_COMMENTS[index % len(DEMO_REVIEW_COMMENTS)]
             )
-            return 1
-        review = min(matches, key=lambda item: item.id)
-        if (
-            review.rating != 5
-            or review.comment != "Excellent location and friendly staff"
-        ):
-            await self.db.reviews.edit_review(
-                review.id,
-                ReviewPatch(
-                    rating=5,
-                    comment="Excellent location and friendly staff",
-                ),
-            )
-        return 1
+            matches = await self.db.reviews.get_filtered(booking_id=booking.id)
+            if not matches:
+                await self.db.reviews.add(ReviewAdd(booking_id=booking.id, rating=rating, comment=comment))
+                count += 1
+                continue
+            review = min(matches, key=lambda item: item.id)
+            if review.rating != rating or review.comment != comment:
+                await self.db.reviews.edit_review(review.id, ReviewPatch(rating=rating, comment=comment))
+            count += 1
+        return count

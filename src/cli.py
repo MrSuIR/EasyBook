@@ -57,7 +57,7 @@ async def _seed_demo() -> None:
         "Demo data is ready: "
         f"{summary.users} users, {summary.facilities} facilities, "
         f"{summary.hotels} hotels, {summary.rooms} rooms, "
-        f"{summary.bookings} bookings, {summary.reviews} review"
+        f"{summary.bookings} bookings, {summary.reviews} reviews"
     )
     typer.echo(f"Admin: admin@example.com / {DEMO_PASSWORD}")
     typer.echo(f"Client: client@example.com / {DEMO_PASSWORD}")

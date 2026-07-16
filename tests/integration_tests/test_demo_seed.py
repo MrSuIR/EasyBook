@@ -26,11 +26,11 @@ async def test_demo_seed_is_idempotent_and_creates_working_accounts(clean_databa
 
         assert first == second
         assert first.users == 3
-        assert first.facilities == 6
-        assert first.hotels == 3
-        assert first.rooms == 6
-        assert first.bookings == 4
-        assert first.reviews == 1
+        assert first.facilities == 12
+        assert first.hotels == 100
+        assert first.rooms == 300
+        assert first.bookings == 300
+        assert first.reviews == 120
 
         auth = AuthService()
         for email, role in (
@@ -50,15 +50,15 @@ async def test_demo_seed_is_idempotent_and_creates_working_accounts(clean_databa
             assert len(hotels) == 1
             demo_hotels.extend(hotels)
             demo_rooms.extend(await db.rooms.get_filtered(hotel_id=hotels[0].id))
-        assert len(demo_hotels) == 3
-        assert len(demo_rooms) == 6
-        assert await db.bookings.count() == 4
-        assert await db.reviews.count() == 1
+        assert len(demo_hotels) == 100
+        assert len(demo_rooms) == 300
+        assert await db.bookings.count() == 300
+        assert await db.reviews.count() == 120
         cancelled = await db.bookings.get_filtered(
             status=BookingStatus.CANCELLED.value
         )
-        assert len(cancelled) == 1
-        assert cancelled[0].cancelled_at is not None
+        assert len(cancelled) == 60
+        assert all(booking.cancelled_at is not None for booking in cancelled)
 
 
 @pytest.mark.asyncio
