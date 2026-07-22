@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     TIMEZONE: str = "Europe/Moscow"
     IMAGE_DIR: Path = Path("src/static/images")
     MAX_IMAGE_SIZE_BYTES: int = 5 * 1024 * 1024
+    IMPORT_REMOTE_DEMO_CATALOG: bool = False
+    GEOAPIFY_API_KEY: str | None = None
     COOKIE_SECURE: bool | None = None
 
     @property

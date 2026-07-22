@@ -22,7 +22,13 @@ async def seed_analytics_data(clean_database):
         second_hotel = await db.hotels.add(HotelAdd(title="Empty Hotel", location="Kazan"))
         third_hotel = await db.hotels.add(HotelAdd(title="Another Empty Hotel", location="Sochi"))
         await db.rooms.add(
-            RoomAdd(hotel_id=second_hotel.id, title="Empty Room", description=None, price=1000, quantity=1)
+            RoomAdd(
+                hotel_id=second_hotel.id,
+                title="Empty Room",
+                description="Номер без бронирований для проверки аналитики",
+                price=1000,
+                quantity=1,
+            )
         )
 
         bookings = []

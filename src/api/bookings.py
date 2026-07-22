@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from src.api.dependencies import AdminUserDep, CurrentUserDep, DBDep, PaginationDep
-from src.schemas.bookings import Booking, BookingAddRequest, BookingSortBy
+from src.schemas.bookings import Booking, BookingAddRequest, BookingSortBy, BookingWithHotel
 from src.schemas.common import PaginatedResponse, SortOrder
 from src.service.bookings import BookingService
 
@@ -21,7 +21,7 @@ async def get_bookings(
     return PaginatedResponse(items=items, total=total, page=pagination.page, per_page=pagination.per_page)
 
 
-@router.get("/me", response_model=list[Booking])
+@router.get("/me", response_model=list[BookingWithHotel])
 async def get_my_bookings(db: DBDep, user: CurrentUserDep):
     return await BookingService(db).get_my_bookings(user.id)
 

@@ -9,7 +9,7 @@ from src.exceptions import (
     ObjectAlreadyExistException,
     UserAlreadyExistsException,
 )
-from src.schemas.users import UserAdd, UserRequestAdd
+from src.schemas.users import UserAdd, UserLogin, UserRequestAdd
 from src.service.base import BaseService
 
 
@@ -40,6 +40,8 @@ class AuthService(BaseService):
             user = await self.db.users.add(
                 UserAdd(
                     email=str(request_data.email).lower(),
+                    first_name=request_data.first_name,
+                    last_name=request_data.last_name,
                     hashed_password=self.hashed_password(request_data.password),
                     role=role,
                 )
@@ -49,7 +51,7 @@ class AuthService(BaseService):
         await self.db.commit()
         return user
 
-    async def login_user(self, request_data: UserRequestAdd) -> str:
+    async def login_user(self, request_data: UserLogin) -> str:
         user = await self.db.users.get_user_with_hashed_password(email=str(request_data.email).lower())
         if user is None:
             raise LoginFailedException

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Response, UploadFile, status
 from src.api.dependencies import AdminUserDep, DBDep
 from src.schemas.facilities import Facility, FacilityAdd
 from src.service.facilities import FacilityService
@@ -17,10 +17,19 @@ async def create_facility(db: DBDep, facility_data: FacilityAdd, _: AdminUserDep
 
 
 @router.put("/{facility_id}", response_model=Facility)
-async def edit_facility(
-    facility_id: int, facility_data: FacilityAdd, db: DBDep, _: AdminUserDep
-):
+async def edit_facility(facility_id: int, facility_data: FacilityAdd, db: DBDep, _: AdminUserDep):
     return await FacilityService(db).edit_facility(facility_id, facility_data)
+
+
+@router.put("/{facility_id}/image", response_model=Facility)
+async def upload_facility_image(facility_id: int, file: UploadFile, db: DBDep, _: AdminUserDep):
+    return await FacilityService(db).upload_image(facility_id, file)
+
+
+@router.delete("/{facility_id}/image", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_facility_image(facility_id: int, db: DBDep, _: AdminUserDep):
+    await FacilityService(db).delete_image(facility_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.delete("/{facility_id}")

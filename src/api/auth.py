@@ -3,7 +3,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from src.api.dependencies import CurrentUserDep, DBDep, set_auth_cookie
 from src.config import settings
-from src.schemas.users import User, UserRequestAdd
+from src.schemas.users import User, UserLogin, UserRequestAdd
 from src.service.auth import AuthService
 
 limiter = Limiter(key_func=get_remote_address)
@@ -18,7 +18,7 @@ async def register_user(request: Request, db: DBDep, request_data: UserRequestAd
 
 @router.post("/login")
 @limiter.limit("10/minute")
-async def login_user(request: Request, db: DBDep, request_data: UserRequestAdd, response: Response):
+async def login_user(request: Request, db: DBDep, request_data: UserLogin, response: Response):
     set_auth_cookie(response, await AuthService(db).login_user(request_data))
     return {"status": "OK"}
 

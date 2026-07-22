@@ -22,7 +22,7 @@ class BookingService(BaseService):
         )
 
     async def get_my_bookings(self, user_id: int):
-        return await self.db.bookings.get_filtered(user_id=user_id)
+        return await self.db.bookings.get_for_user_with_hotels(user_id)
 
     async def get_booking(self, booking_id: int, actor: User):
         try:

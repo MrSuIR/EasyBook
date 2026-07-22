@@ -51,6 +51,10 @@ class Booking(BookingAdd):
         return self.price * (self.date_to - self.date_from).days
 
 
+class BookingWithHotel(Booking):
+    hotel_id: int
+
+
 class BookingCreate(BaseModel):
     room_id: int
     user_id: int
