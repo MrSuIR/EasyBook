@@ -2,6 +2,7 @@ from sqlalchemy import select, delete, insert
 
 from src.models import FacilitiesOrm
 from src.models.facilities import RoomsFacilitiesOrm
+from src.exceptions import ObjectNotFoundException
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import FacilityDataMapper, RoomFacilityDataMapper
 
@@ -9,6 +10,14 @@ from src.repositories.mappers.mappers import FacilityDataMapper, RoomFacilityDat
 class FacilitiesRepository(BaseRepository):
     model = FacilitiesOrm
     mapper = FacilityDataMapper
+
+    async def get_for_update(self, facility_id: int):
+        query = select(self.model).where(self.model.id == facility_id).with_for_update()
+        result = await self.session.execute(query)
+        model = result.scalars().one_or_none()
+        if model is None:
+            raise ObjectNotFoundException
+        return self.mapper.map_to_domain_entity(model)
 
 
 class RoomsFacilitiesRepository(BaseRepository):

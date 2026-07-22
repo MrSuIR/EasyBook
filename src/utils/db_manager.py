@@ -6,6 +6,7 @@ from src.repositories.rooms import RoomsRepository
 from src.repositories.users import UsersRepository
 from src.repositories.images import HotelImagesRepository
 from src.repositories.reviews import ReviewsRepository
+from src.repositories.demo_seed import DemoSeedRepository
 
 
 class DBManager:
@@ -24,6 +25,7 @@ class DBManager:
         self.rooms_facilities = RoomsFacilitiesRepository(self.session)
         self.images = HotelImagesRepository(self.session)
         self.reviews = ReviewsRepository(self.session)
+        self.demo_seed = DemoSeedRepository(self.session)
 
         return self
 

@@ -1,5 +1,5 @@
 x-app-environment: &app-environment
-  MODE: ${MODE:-PROD}
+  MODE: ${MODE:-LOCAL}
   DB_NAME: easybook
   DB_HOST: db
   DB_PORT: 5432
@@ -8,7 +8,8 @@ x-app-environment: &app-environment
   JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-secret-in-production}
   JWT_ALGORITHM: HS256
   ACCESS_TOKEN_EXPIRE_MINUTES: 30
-  COOKIE_SECURE: ${COOKIE_SECURE:-true}
+  COOKIE_SECURE: ${COOKIE_SECURE:-false}
+  GEOAPIFY_API_KEY: ${GEOAPIFY_API_KEY:-}
   IMAGE_DIR: /app/src/static/images
 
 services:
@@ -18,6 +19,8 @@ services:
       POSTGRES_DB: easybook
       POSTGRES_USER: easybook
       POSTGRES_PASSWORD: easybook
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -32,7 +35,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - hotel_images:/app/src/static/images
+      - ./src/static/images:/app/src/static/images
     depends_on:
       db:
         condition: service_healthy
@@ -47,4 +50,3 @@ services:
 
 volumes:
   postgres_data:
-  hotel_images:

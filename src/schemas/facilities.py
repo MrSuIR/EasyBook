@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field, field_validator
+from pathlib import Path
+
+from pydantic import BaseModel, Field, computed_field, field_validator
 
 
 class FacilityAdd(BaseModel):
@@ -15,6 +17,18 @@ class FacilityAdd(BaseModel):
 
 class Facility(FacilityAdd):
     id: int
+    image_path: str | None = Field(default=None, exclude=True)
+
+    @computed_field
+    @property
+    def image_url(self) -> str | None:
+        if self.image_path is None:
+            return None
+        return f"/static/images/{Path(self.image_path).as_posix()}"
+
+
+class FacilityImagePathPatch(BaseModel):
+    image_path: str | None
 
 
 class RoomFacilityAdd(BaseModel):

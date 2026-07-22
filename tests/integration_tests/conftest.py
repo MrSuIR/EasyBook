@@ -69,12 +69,20 @@ async def clean_database():
             RoomAdd(hotel_id=hotel.id, title="Standard", description="Test room", price=2500, quantity=1)
         )
         password_hash = AuthService().hashed_password("password123")
-        for email, role in (
-            ("admin@example.com", UserRole.ADMIN),
-            ("client@example.com", UserRole.CLIENT),
-            ("other@example.com", UserRole.CLIENT),
+        for email, first_name, last_name, role in (
+            ("admin@example.com", "Алексей", "Смирнов", UserRole.ADMIN),
+            ("client@example.com", "Анна", "Петрова", UserRole.CLIENT),
+            ("other@example.com", "Иван", "Иванов", UserRole.CLIENT),
         ):
-            await db.users.add(UserAdd(email=email, hashed_password=password_hash, role=role))
+            await db.users.add(
+                UserAdd(
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    hashed_password=password_hash,
+                    role=role,
+                )
+            )
         await db.commit()
 
     yield {"hotel_id": hotel.id, "room_id": room.id, "facility_id": facility.id}

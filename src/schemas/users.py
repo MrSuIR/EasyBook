@@ -1,8 +1,13 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints, field_validator
 from src.constants import UserRole
 
 
-class UserRequestAdd(BaseModel):
+UserName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+
+
+class UserCredentials(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     email: EmailStr
@@ -16,8 +21,19 @@ class UserRequestAdd(BaseModel):
         return value
 
 
+class UserRequestAdd(UserCredentials):
+    first_name: UserName
+    last_name: UserName
+
+
+class UserLogin(UserCredentials):
+    pass
+
+
 class UserAdd(BaseModel):
     email: EmailStr
+    first_name: UserName
+    last_name: UserName
     hashed_password: str
     role: UserRole = UserRole.CLIENT
 
@@ -25,6 +41,8 @@ class UserAdd(BaseModel):
 class User(BaseModel):
     id: int
     email: EmailStr
+    first_name: UserName
+    last_name: UserName
     role: UserRole
 
 

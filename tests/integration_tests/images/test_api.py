@@ -30,7 +30,7 @@ async def test_image_upload_ignores_filename_and_requires_admin(client, admin_cl
     assert ".." not in body["original_url"]
     assert set(body) == {"id", "hotel_id", "created_at", "original_url"}
     assert (settings.IMAGE_DIR / body["original_url"].removeprefix("/static/images/")).is_file()
-    assert (settings.IMAGE_DIR / str(hotel_id)).is_dir()
+    assert (settings.IMAGE_DIR / "hotels" / str(hotel_id)).is_dir()
 
     images = await client.get(f"/hotels/{hotel_id}/images")
     assert images.status_code == 200
@@ -52,28 +52,21 @@ async def test_invalid_mime_corruption_and_size_rejected(admin_client, clean_dat
 
 
 @pytest.mark.asyncio
-async def test_admin_can_replace_image_and_old_file_is_removed(
-    client, admin_client, clean_database
-):
+async def test_admin_can_replace_image_and_old_file_is_removed(client, admin_client, clean_database):
     hotel_id = clean_database["hotel_id"]
     created = await admin_client.post(
-        f"/hotels/{hotel_id}/images",
-        files={"file": ("first.png", valid_png(), "image/png")},
+        f"/hotels/{hotel_id}/images", files={"file": ("first.png", valid_png(), "image/png")}
     )
     original = created.json()
-    old_path = settings.IMAGE_DIR / original["original_url"].removeprefix(
-        "/static/images/"
-    )
+    old_path = settings.IMAGE_DIR / original["original_url"].removeprefix("/static/images/")
     assert old_path.is_file()
 
     denied = await client.put(
-        f"/hotels/{hotel_id}/images/{original['id']}",
-        files={"file": ("new.jpg", valid_jpeg(), "image/jpeg")},
+        f"/hotels/{hotel_id}/images/{original['id']}", files={"file": ("new.jpg", valid_jpeg(), "image/jpeg")}
     )
     assert denied.status_code == 403
     replaced = await admin_client.put(
-        f"/hotels/{hotel_id}/images/{original['id']}",
-        files={"file": ("new.jpg", valid_jpeg(), "image/jpeg")},
+        f"/hotels/{hotel_id}/images/{original['id']}", files={"file": ("new.jpg", valid_jpeg(), "image/jpeg")}
     )
     assert replaced.status_code == 200
     body = replaced.json()
@@ -82,29 +75,21 @@ async def test_admin_can_replace_image_and_old_file_is_removed(
     assert body["original_url"] != original["original_url"]
     assert body["original_url"].endswith(".jpg")
     assert not old_path.exists()
-    new_path = settings.IMAGE_DIR / body["original_url"].removeprefix(
-        "/static/images/"
-    )
+    new_path = settings.IMAGE_DIR / body["original_url"].removeprefix("/static/images/")
     with Image.open(new_path) as image:
         assert image.format == "JPEG"
 
 
 @pytest.mark.asyncio
-async def test_invalid_replacement_keeps_original_image(
-    admin_client, clean_database
-):
+async def test_invalid_replacement_keeps_original_image(admin_client, clean_database):
     hotel_id = clean_database["hotel_id"]
     created = await admin_client.post(
-        f"/hotels/{hotel_id}/images",
-        files={"file": ("first.png", valid_png(), "image/png")},
+        f"/hotels/{hotel_id}/images", files={"file": ("first.png", valid_png(), "image/png")}
     )
     original = created.json()
-    old_path = settings.IMAGE_DIR / original["original_url"].removeprefix(
-        "/static/images/"
-    )
+    old_path = settings.IMAGE_DIR / original["original_url"].removeprefix("/static/images/")
     response = await admin_client.put(
-        f"/hotels/{hotel_id}/images/{original['id']}",
-        files={"file": ("broken.png", b"broken", "image/png")},
+        f"/hotels/{hotel_id}/images/{original['id']}", files={"file": ("broken.png", b"broken", "image/png")}
     )
     assert response.status_code == 422
     assert old_path.read_bytes() == valid_png()
@@ -113,9 +98,7 @@ async def test_invalid_replacement_keeps_original_image(
 
 
 @pytest.mark.asyncio
-async def test_replace_missing_image_returns_domain_404(
-    admin_client, clean_database
-):
+async def test_replace_missing_image_returns_domain_404(admin_client, clean_database):
     hotel_id = clean_database["hotel_id"]
     response = await admin_client.put(
         f"/hotels/{hotel_id}/images/00000000-0000-0000-0000-000000000000",

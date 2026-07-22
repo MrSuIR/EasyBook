@@ -34,6 +34,11 @@ class FacilityNotFoundException(ObjectNotFoundException):
     detail = "Одно или несколько удобств не найдены"
 
 
+class FacilityImageNotFoundException(ObjectNotFoundException):
+    code = "facility_image_not_found"
+    detail = "Изображение удобства не найдено"
+
+
 class ImageNotFoundException(ObjectNotFoundException):
     code = "image_not_found"
     detail = "Изображение не найдено"
@@ -121,11 +126,22 @@ class ForbiddenException(EasyBookException):
 
 class ImageValidationException(EasyBookException):
     status_code = 422
-    code = "invalid_image"
+    code = "image_validation_error"
     detail = "Файл не является допустимым изображением JPEG, PNG или WebP"
+
+
+class FacilityImageDimensionsException(ImageValidationException):
+    code = "invalid_facility_image_dimensions"
+    detail = "Изображение удобства должно иметь размер 38×38 пикселей"
 
 
 class ImageTooLargeException(EasyBookException):
     status_code = 413
     code = "image_too_large"
     detail = "Размер изображения превышает 5 МБ"
+
+
+class LocationProviderUnavailableException(EasyBookException):
+    status_code = 503
+    code = "location_provider_unavailable"
+    detail = "Сервис подсказок местоположения временно недоступен"

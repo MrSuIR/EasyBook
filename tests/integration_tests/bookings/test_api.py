@@ -54,6 +54,7 @@ async def test_cancel_is_idempotent_frees_room_and_keeps_history(
     assert (await client.post("/bookings", json=payload)).status_code == 201
     history = await client.get("/bookings/me")
     assert any(item["id"] == booking_id for item in history.json())
+    assert all(item["hotel_id"] == clean_database["hotel_id"] for item in history.json())
 
 
 @pytest.mark.asyncio

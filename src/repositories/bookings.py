@@ -12,13 +12,28 @@ from src.models import BookingsOrm, ReviewsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import BookingDataMapper
 from src.repositories.utils import sort_expression
-from src.schemas.bookings import BookingAdd, BookingCreate, BookingSortBy
+from src.schemas.bookings import BookingAdd, BookingCreate, BookingSortBy, BookingWithHotel
 from src.schemas.common import SortOrder
 
 
 class BookingsRepository(BaseRepository):
     model = BookingsOrm
     mapper = BookingDataMapper
+
+    async def get_for_user_with_hotels(self, user_id: int):
+        query = (
+            select(BookingsOrm, RoomsOrm.hotel_id)
+            .join(RoomsOrm, RoomsOrm.id == BookingsOrm.room_id)
+            .where(BookingsOrm.user_id == user_id)
+        )
+        result = await self.session.execute(query)
+        return [
+            BookingWithHotel(
+                **self.mapper.map_to_domain_entity(booking).model_dump(),
+                hotel_id=hotel_id,
+            )
+            for booking, hotel_id in result.all()
+        ]
 
     async def get_for_update(self, booking_id: int):
         booking = await self._get_locked_booking(booking_id)
