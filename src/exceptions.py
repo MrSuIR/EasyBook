@@ -49,6 +49,11 @@ class ReviewNotFoundException(ObjectNotFoundException):
     detail = "Отзыв не найден"
 
 
+class UserNotFoundException(ObjectNotFoundException):
+    code = "user_not_found"
+    detail = "Пользователь не найден"
+
+
 class ObjectAlreadyExistException(EasyBookException):
     status_code = 409
     code = "object_already_exists"

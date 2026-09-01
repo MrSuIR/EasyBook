@@ -16,12 +16,16 @@ class RoomsOrm(Base):
             "char_length(description) BETWEEN 1 AND 500 AND description ~ '[^[:space:]]'",
             name="ck_rooms_description_valid",
         ),
+        CheckConstraint(
+            "char_length(title) BETWEEN 1 AND 200 AND title ~ '[^[:space:]]'",
+            name="ck_rooms_title_valid",
+        ),
         Index("ix_rooms_hotel_id", "hotel_id"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     hotel_id: Mapped[int] = mapped_column(ForeignKey("hotels.id", ondelete="RESTRICT"))
-    title: Mapped[str]
+    title: Mapped[str] = mapped_column(String(200))
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     price: Mapped[int]
     quantity: Mapped[int]

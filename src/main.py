@@ -17,6 +17,7 @@ from src.api.images import router as router_images
 from src.api.locations import router as router_locations
 from src.api.rooms import router as router_rooms
 from src.api.reviews import router as router_reviews
+from src.api.users import router as router_users
 from src.config import settings
 from src.database import engine
 from src.exceptions import EasyBookException
@@ -93,6 +94,7 @@ app.include_router(router_images)
 app.include_router(router_reviews)
 app.include_router(router_analytics)
 app.include_router(router_locations)
+app.include_router(router_users)
 app.mount("/static/images", StaticFiles(directory=settings.IMAGE_DIR), name="images")
 
 

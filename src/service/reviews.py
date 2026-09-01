@@ -1,5 +1,3 @@
-from datetime import date
-
 from src.constants import BookingStatus
 from src.exceptions import (
     BookingNotFoundException,
@@ -15,6 +13,7 @@ from src.schemas.common import SortOrder
 from src.schemas.reviews import ReviewAdd, ReviewCreate, ReviewPatch, ReviewSortBy
 from src.schemas.users import User
 from src.service.base import BaseService
+from src.utils.time import local_today
 
 
 class ReviewService(BaseService):
@@ -52,7 +51,7 @@ class ReviewService(BaseService):
         self._check_owner(booking.user_id, actor.id)
 
         booking_is_confirmed = booking.status == BookingStatus.CONFIRMED
-        stay_is_completed = date.today() >= booking.date_to
+        stay_is_completed = local_today() >= booking.date_to
         if not booking_is_confirmed or not stay_is_completed:
             raise ReviewNotAllowedException
 

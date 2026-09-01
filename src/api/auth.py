@@ -3,8 +3,9 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from src.api.dependencies import CurrentUserDep, DBDep, set_auth_cookie
 from src.config import settings
-from src.schemas.users import User, UserLogin, UserRequestAdd
+from src.schemas.users import User, UserLogin, UserProfileUpdate, UserRequestAdd
 from src.service.auth import AuthService
+from src.service.users import UserService
 
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
@@ -26,6 +27,11 @@ async def login_user(request: Request, db: DBDep, request_data: UserLogin, respo
 @router.get("/me", response_model=User)
 async def get_me(user: CurrentUserDep):
     return user
+
+
+@router.put("/me", response_model=User)
+async def edit_me(data: UserProfileUpdate, db: DBDep, user: CurrentUserDep):
+    return await UserService(db).edit_profile(user.id, data)
 
 
 @router.post("/logout")

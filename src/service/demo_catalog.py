@@ -61,8 +61,6 @@ DEMO_DESTINATIONS = (
     DemoDestination("Стамбул", "Турция", 41.0082, 28.9784, 26, 50_000),
 )
 
-# Curated from official hotel and city tourism directories.  The names are kept
-# in the repository so a first local launch never depends on a third-party API.
 REAL_HOTEL_NAMES: dict[str, tuple[str, ...]] = {
     "Москва": (
         "Гостиница Метрополь", "Лотте Отель Москва", "Арарат Парк Хаятт Москва",
@@ -128,9 +126,6 @@ REAL_HOTEL_NAMES: dict[str, tuple[str, ...]] = {
     ),
 }
 
-# Placeholder records created by the first local-only catalog implementation.
-# They are listed explicitly so a subsequent seed can replace them without
-# touching hotels created by a user.
 LEGACY_PLACEHOLDER_NAME_PARTS = (
     "Гранд", "Панорама", "Резиденция", "Тихая гавань", "Белые ночи",
     "Золотой берег", "Северный ветер", "Лазурный", "Городской сад", "Маяк",

@@ -10,6 +10,7 @@ class BookingsOrm(Base):
     __tablename__ = "bookings"
     __table_args__ = (
         CheckConstraint("date_from < date_to", name="ck_bookings_date_order"),
+        CheckConstraint("price >= 0", name="ck_bookings_price_nonnegative"),
         CheckConstraint(
             "status IN ('confirmed', 'cancelled')", name="ck_bookings_status"
         ),

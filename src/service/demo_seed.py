@@ -10,6 +10,7 @@ from src.constants import UserRole
 from src.schemas.facilities import Facility, FacilityAdd
 from src.schemas.users import UserAdd
 from src.service.auth import AuthService
+from src.utils.time import local_today
 from src.service.base import BaseService
 from src.service.demo_catalog import (
     LEGACY_PLACEHOLDER_HOTEL_TITLES,
@@ -109,7 +110,7 @@ class DemoSeedService(BaseService):
             legacy_titles=(*LEGACY_DEMO_HOTEL_TITLES, *LEGACY_PLACEHOLDER_HOTEL_TITLES),
             users={email: user.id for email, user in users.items()},
             facilities={title: facility.id for title, facility in facilities.items()},
-            today=today or date.today(),
+            today=today or local_today(),
         )
         created_paths = []
         try:

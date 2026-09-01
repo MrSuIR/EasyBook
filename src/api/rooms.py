@@ -12,6 +12,11 @@ async def get_rooms(date_from: date, date_to: date, hotel_id: int, db: DBDep):
     return await RoomService(db).get_rooms(date_from, date_to, hotel_id)
 
 
+@router.get("/{hotel_id}/rooms/admin", response_model=list[RoomWithRels])
+async def get_admin_rooms(hotel_id: int, db: DBDep, _: AdminUserDep):
+    return await RoomService(db).get_admin_rooms(hotel_id)
+
+
 @router.get("/{hotel_id}/rooms/{room_id}", response_model=RoomWithRels)
 async def get_room(hotel_id: int, room_id: int, db: DBDep):
     return await RoomService(db).get_room(room_id, hotel_id)

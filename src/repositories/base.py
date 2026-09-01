@@ -73,6 +73,8 @@ class BaseRepository:
         try:
             result = await self.session.execute(edit_stmt)
         except IntegrityError as ex:
+            if getattr(ex.orig, "sqlstate", None) == "23505":
+                raise ObjectAlreadyExistException from ex
             raise ObjectIntegrityException from ex
         model = result.scalars().one_or_none()
         if model is None:

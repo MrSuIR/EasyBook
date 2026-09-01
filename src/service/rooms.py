@@ -18,6 +18,10 @@ class RoomService(BaseService):
         except ObjectNotFoundException as ex:
             raise RoomNotFoundException from ex
 
+    async def get_admin_rooms(self, hotel_id: int):
+        await HotelService(self.db).check_hotel_exist(hotel_id)
+        return await self.db.rooms.get_all_for_hotel(hotel_id)
+
     async def add_room(self, hotel_id: int, room_data: RoomAddRequest):
         await HotelService(self.db).check_hotel_exist(hotel_id)
         await self._validate_facilities(room_data.facilities_ids)

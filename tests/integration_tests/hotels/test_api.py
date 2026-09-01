@@ -95,3 +95,31 @@ async def test_hotel_sorting_rejects_unknown_values(anonymous_client, clean_data
     for sort_by in ("id", "title", "location"):
         response = await anonymous_client.get("/hotels", params=base_params | {"sort_by": sort_by})
         assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_admin_catalog_includes_hotels_without_rooms_and_supports_partial_search(
+    client, admin_client
+):
+    created = await admin_client.post(
+        "/hotels", json={"title": "Северная гавань", "location": "Мурманск, Россия"}
+    )
+    assert created.status_code == 201
+
+    assert (await client.get("/hotels/admin")).status_code == 403
+    listing = await admin_client.get(
+        "/hotels/admin",
+        params={"title": "гав", "sort_by": "title", "sort_order": "asc"},
+    )
+    assert listing.status_code == 200
+    assert listing.json()["total"] == 1
+    assert listing.json()["items"][0]["id"] == created.json()["id"]
+
+
+@pytest.mark.asyncio
+async def test_hotel_patch_rejects_explicit_null(admin_client, clean_database):
+    response = await admin_client.patch(
+        f"/hotels/{clean_database['hotel_id']}", json={"title": None}
+    )
+    assert response.status_code == 422
+    assert response.json()["code"] == "validation_error"

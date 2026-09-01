@@ -12,6 +12,44 @@ class HotelsRepository(BaseRepository):
     model = HotelsOrm
     mapper = HotelDataMapper
 
+    async def get_for_update(self, hotel_id: int):
+        query = select(self.model).where(self.model.id == hotel_id).with_for_update()
+        model = (await self.session.execute(query)).scalars().one_or_none()
+        if model is None:
+            from src.exceptions import ObjectNotFoundException
+
+            raise ObjectNotFoundException
+        return self.mapper.map_to_domain_entity(model)
+
+    async def get_paginated(
+        self,
+        limit: int,
+        offset: int,
+        sort_by: HotelSortBy,
+        sort_order: SortOrder,
+        title: str | None = None,
+        location: str | None = None,
+    ):
+        query = select(HotelsOrm)
+        if title:
+            query = query.where(HotelsOrm.title.ilike(f"%{title}%"))
+        if location:
+            query = query.where(HotelsOrm.location.ilike(f"%{location}%"))
+
+        total = (
+            await self.session.execute(select(func.count()).select_from(query.subquery()))
+        ).scalar_one()
+        sort_columns = {
+            HotelSortBy.ID: HotelsOrm.id,
+            HotelSortBy.TITLE: HotelsOrm.title,
+            HotelSortBy.LOCATION: HotelsOrm.location,
+        }
+        query = query.order_by(sort_expression(sort_columns[sort_by], sort_order))
+        if sort_by != HotelSortBy.ID:
+            query = query.order_by(sort_expression(HotelsOrm.id, sort_order))
+        result = await self.session.execute(query.limit(limit).offset(offset))
+        return [self.mapper.map_to_domain_entity(item) for item in result.scalars().all()], total
+
     async def get_filtered_by_time(
         self,
         date_from: date,
@@ -30,7 +68,7 @@ class HotelsRepository(BaseRepository):
         if location:
             query = query.filter(HotelsOrm.location.ilike(f"%{location}%"))
         if title:
-            query = query.filter_by(title=title)
+            query = query.filter(HotelsOrm.title.ilike(f"%{title}%"))
         total = (await self.session.execute(select(func.count()).select_from(query.subquery()))).scalar_one()
         sort_columns = {
             HotelSortBy.ID: HotelsOrm.id,

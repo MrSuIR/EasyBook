@@ -3,6 +3,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, computed_field, model_validator
 from src.constants import BookingStatus
+from src.utils.time import local_today
 
 
 class BookingSortBy(StrEnum):
@@ -20,7 +21,7 @@ class BookingAddRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_dates(self):
-        if self.date_from < date.today():
+        if self.date_from < local_today():
             raise ValueError("Дата заезда не может быть в прошлом")
         if self.date_from >= self.date_to:
             raise ValueError("Дата выезда должна быть позже даты заезда")
