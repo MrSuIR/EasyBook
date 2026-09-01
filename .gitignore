@@ -4,6 +4,7 @@
 .venv/
 venv/
 AGENTS.md
+CONTEXT.md
 .idea/
 .vscode/
 .pytest_cache/
