@@ -57,13 +57,54 @@ erDiagram
     FACILITIES ||--o{ ROOMS_FACILITIES : assigned
     HOTELS ||--o{ HOTEL_IMAGES : owns
 
-    USERS { int id PK string email UK string first_name string last_name string hashed_password string role }
-    HOTELS { int id PK string title string location }
-    ROOMS { int id PK int hotel_id FK string description int price int quantity }
-    BOOKINGS { int id PK int room_id FK int user_id FK date date_from date date_to int price string status }
-    REVIEWS { int id PK int booking_id FK_UK int rating string comment datetime created_at datetime updated_at }
-    FACILITIES { int id PK string title string image_path_nullable }
-    HOTEL_IMAGES { uuid id PK int hotel_id FK string original_path datetime created_at }
+    USERS {
+        int id PK
+        string email UK
+        string first_name
+        string last_name
+        string hashed_password
+        string role
+    }
+    HOTELS {
+        int id PK
+        string title
+        string location
+    }
+    ROOMS {
+        int id PK
+        int hotel_id FK
+        string description
+        int price
+        int quantity
+    }
+    BOOKINGS {
+        int id PK
+        int room_id FK
+        int user_id FK
+        date date_from
+        date date_to
+        int price
+        string status
+    }
+    REVIEWS {
+        int id PK
+        int booking_id FK, UK
+        int rating
+        string comment
+        datetime created_at
+        datetime updated_at
+    }
+    FACILITIES {
+        int id PK
+        string title
+        string image_path "nullable"
+    }
+    HOTEL_IMAGES {
+        uuid id PK
+        int hotel_id FK
+        string original_path
+        datetime created_at
+    }
 ```
 
 Ключевые ограничения БД: `price >= 0`, `quantity > 0`,
