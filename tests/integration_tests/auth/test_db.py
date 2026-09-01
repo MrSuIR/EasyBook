@@ -37,3 +37,44 @@ async def test_database_rejects_invalid_user_names(clean_database, column, value
                 values,
             )
             await session.commit()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("email", ("UPPER@example.com", " spaced@example.com "))
+async def test_database_requires_normalized_user_email(clean_database, email):
+    async with async_session_maker_null_pool() as session:
+        with pytest.raises(SQLAlchemyError):
+            await session.execute(
+                text(
+                    "INSERT INTO users "
+                    "(email, first_name, last_name, hashed_password, role) "
+                    "VALUES (:email, 'Иван', 'Иванов', 'unused', 'client')"
+                ),
+                {"email": email},
+            )
+            await session.commit()
+
+
+@pytest.mark.asyncio
+async def test_database_preserves_legacy_user_name_placeholders(clean_database):
+    async with async_session_maker_null_pool() as session:
+        await session.execute(
+            text(
+                "INSERT INTO users "
+                "(email, first_name, last_name, hashed_password, role) "
+                "VALUES ('legacy@example.com', 'Не указано', 'Не указано', "
+                "'unused', 'client')"
+            )
+        )
+        await session.commit()
+
+        stored = (
+            await session.execute(
+                text(
+                    "SELECT first_name, last_name FROM users "
+                    "WHERE email = 'legacy@example.com'"
+                )
+            )
+        ).one()
+
+    assert stored == ("Не указано", "Не указано")

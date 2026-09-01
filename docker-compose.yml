@@ -1,14 +1,13 @@
 x-app-environment: &app-environment
   MODE: ${MODE:-LOCAL}
-  DB_NAME: easybook
+  DB_NAME: ${DB_NAME:-easybook}
   DB_HOST: db
   DB_PORT: 5432
   DB_USER: easybook
   DB_PASS: easybook
-  JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-secret-in-production}
+  JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-development-secret-change-before-production}
   JWT_ALGORITHM: HS256
   ACCESS_TOKEN_EXPIRE_MINUTES: 30
-  COOKIE_SECURE: ${COOKIE_SECURE:-false}
   GEOAPIFY_API_KEY: ${GEOAPIFY_API_KEY:-}
   IMAGE_DIR: /app/src/static/images
 
@@ -16,7 +15,7 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: easybook
+      POSTGRES_DB: ${DB_NAME:-easybook}
       POSTGRES_USER: easybook
       POSTGRES_PASSWORD: easybook
     ports:
@@ -24,7 +23,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U easybook -d easybook"]
+      test: ["CMD-SHELL", "pg_isready -U easybook -d ${DB_NAME:-easybook}"]
       interval: 5s
       timeout: 3s
       retries: 10

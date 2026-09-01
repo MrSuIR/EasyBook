@@ -47,8 +47,6 @@ def _validate_image_content(
                 dimensions = image.size
                 image.verify()
 
-            # verify() invalidates the image object. Reopen and fully decode the
-            # payload before accepting it.
             with Image.open(BytesIO(content), formats=list(ALLOWED_IMAGES)) as image:
                 image.load()
     except (

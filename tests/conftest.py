@@ -1,7 +1,6 @@
 import os
 
 
-# Unit-тесты импортируют конфигурацию, но не должны требовать внешнюю БД.
 os.environ.setdefault("MODE", "TEST")
 os.environ.setdefault("DB_NAME", "easybook_test")
 os.environ.setdefault("DB_HOST", "localhost")

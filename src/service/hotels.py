@@ -4,6 +4,7 @@ from src.exceptions import ObjectNotFoundException, HotelNotFoundException
 from src.schemas.common import SortOrder
 from src.schemas.hotels import HotelAdd, HotelPatch, HotelSortBy
 from src.service.base import BaseService
+from src.service.image_storage import remove_image_file
 
 
 class HotelService(BaseService):
@@ -40,6 +41,24 @@ class HotelService(BaseService):
         await self.db.commit()
         return hotel
 
+    async def get_admin_hotels(
+        self,
+        page: int,
+        per_page: int,
+        title: str | None = None,
+        location: str | None = None,
+        sort_by: HotelSortBy | None = None,
+        sort_order: SortOrder | None = None,
+    ):
+        return await self.db.hotels.get_paginated(
+            limit=per_page,
+            offset=per_page * (page - 1),
+            title=title,
+            location=location,
+            sort_by=sort_by or HotelSortBy.ID,
+            sort_order=sort_order or SortOrder.ASC,
+        )
+
     async def edit_hotel(
         self,
         hotel_id: int,
@@ -56,10 +75,14 @@ class HotelService(BaseService):
 
     async def delete_hotel(self, hotel_id: int):
         try:
+            await self.db.hotels.get_for_update(hotel_id)
+            images = await self.db.images.get_filtered(hotel_id=hotel_id)
             await self.db.hotels.delete(id=hotel_id)
         except ObjectNotFoundException as ex:
             raise HotelNotFoundException from ex
         await self.db.commit()
+        for image in images:
+            await remove_image_file(image.original_path)
 
     async def check_hotel_exist(self, hotel_id: int):
         try:

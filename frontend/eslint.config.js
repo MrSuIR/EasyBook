@@ -7,8 +7,17 @@ export default [
   { ignores: ["dist"] },
   {
     files: ["**/*.{js,jsx}"],
-    languageOptions: { ecmaVersion: 2024, sourceType: "module", parserOptions: { ecmaFeatures: { jsx: true } }, globals: globals.browser },
+    languageOptions: {
+      ecmaVersion: 2024,
+      sourceType: "module",
+      parserOptions: { ecmaFeatures: { jsx: true } },
+      globals: globals.browser,
+    },
     plugins: { "react-hooks": reactHooks, "react-refresh": reactRefresh },
-    rules: { ...js.configs.recommended.rules, ...reactHooks.configs.recommended.rules, ...reactRefresh.configs.vite.rules },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      ...reactRefresh.configs.vite.rules,
+    },
   },
 ];

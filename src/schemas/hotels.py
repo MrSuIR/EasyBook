@@ -30,11 +30,13 @@ class HotelPatch(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=100)
     location: str | None = Field(default=None, min_length=1, max_length=500)
 
-    @field_validator("title", "location")
+    @field_validator("title", "location", mode="before")
     @classmethod
     def strip_optional(cls, value: str | None) -> str | None:
         if value is None:
-            return None
+            raise ValueError("Значение не может быть null")
+        if not isinstance(value, str):
+            return value
         value = value.strip()
         if not value:
             raise ValueError("Значение не может быть пустым")

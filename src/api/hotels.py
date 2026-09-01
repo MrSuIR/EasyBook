@@ -34,6 +34,29 @@ async def get_hotels(
     )
 
 
+@router.get("/admin", response_model=PaginatedResponse[Hotel])
+async def get_admin_hotels(
+    pagination: PaginationDep,
+    db: DBDep,
+    _: AdminUserDep,
+    title: str | None = None,
+    location: str | None = None,
+    sort_by: HotelSortBy | None = None,
+    sort_order: SortOrder | None = None,
+):
+    items, total = await HotelService(db).get_admin_hotels(
+        page=pagination.page,
+        per_page=pagination.per_page,
+        title=title,
+        location=location,
+        sort_by=sort_by,
+        sort_order=sort_order,
+    )
+    return PaginatedResponse(
+        items=items, total=total, page=pagination.page, per_page=pagination.per_page
+    )
+
+
 @router.get("/{hotel_id}", response_model=Hotel)
 async def get_hotel(hotel_id: int, db: DBDep):
     return await HotelService(db).get_hotel(hotel_id)

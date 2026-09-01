@@ -11,5 +11,6 @@ PyJWT==2.10.1
 python-multipart==0.0.20
 slowapi==0.1.10
 SQLAlchemy==2.0.40
+tzdata==2026.3
 typer==0.15.3
 uvicorn[standard]==0.34.2

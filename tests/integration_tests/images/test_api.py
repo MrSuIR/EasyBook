@@ -1,3 +1,4 @@
+import asyncio
 from io import BytesIO
 
 import pytest
@@ -106,3 +107,51 @@ async def test_replace_missing_image_returns_domain_404(admin_client, clean_data
     )
     assert response.status_code == 404
     assert response.json()["code"] == "image_not_found"
+
+
+@pytest.mark.asyncio
+async def test_concurrent_replacements_leave_one_committed_file(admin_client, clean_database):
+    hotel_id = clean_database["hotel_id"]
+    created = await admin_client.post(
+        f"/hotels/{hotel_id}/images",
+        files={"file": ("first.png", valid_png(), "image/png")},
+    )
+    image_id = created.json()["id"]
+
+    responses = await asyncio.gather(
+        admin_client.put(
+            f"/hotels/{hotel_id}/images/{image_id}",
+            files={"file": ("second.jpg", valid_jpeg(), "image/jpeg")},
+        ),
+        admin_client.put(
+            f"/hotels/{hotel_id}/images/{image_id}",
+            files={"file": ("third.png", valid_png(), "image/png")},
+        ),
+    )
+    assert [response.status_code for response in responses] == [200, 200]
+    listing = (await admin_client.get(f"/hotels/{hotel_id}/images")).json()
+    assert len(listing) == 1
+    stored = list((settings.IMAGE_DIR / "hotels" / str(hotel_id)).iterdir())
+    assert len(stored) == 1
+    assert stored[0].name in listing[0]["original_url"]
+
+
+@pytest.mark.asyncio
+async def test_deleting_hotel_removes_its_image_files(admin_client):
+    hotel = await admin_client.post(
+        "/hotels", json={"title": "Temporary Hotel", "location": "Test City"}
+    )
+    hotel_id = hotel.json()["id"]
+    uploaded = await admin_client.post(
+        f"/hotels/{hotel_id}/images",
+        files={"file": ("photo.png", valid_png(), "image/png")},
+    )
+    image_path = settings.IMAGE_DIR / uploaded.json()["original_url"].removeprefix(
+        "/static/images/"
+    )
+    assert image_path.is_file()
+
+    deleted = await admin_client.delete(f"/hotels/{hotel_id}")
+    assert deleted.status_code == 200
+    assert not image_path.exists()
+    assert (await admin_client.get(f"/hotels/{hotel_id}")).status_code == 404

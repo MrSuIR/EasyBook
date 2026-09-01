@@ -45,7 +45,6 @@ def _validate_existing_data() -> None:
 def upgrade() -> None:
     _validate_existing_data()
 
-    # Старые установки PostgreSQL могли создать системное имя unique constraint.
     uniques = sa.inspect(op.get_bind()).get_unique_constraints("users")
     email_unique = next(
         (item for item in uniques if item.get("column_names") == ["email"]), None

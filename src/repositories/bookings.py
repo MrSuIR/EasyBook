@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from sqlalchemy import func, select, update
 from src.constants import BookingStatus
 from src.exceptions import (
@@ -14,6 +14,7 @@ from src.repositories.mappers.mappers import BookingDataMapper
 from src.repositories.utils import sort_expression
 from src.schemas.bookings import BookingAdd, BookingCreate, BookingSortBy, BookingWithHotel
 from src.schemas.common import SortOrder
+from src.utils.time import local_today
 
 
 class BookingsRepository(BaseRepository):
@@ -44,7 +45,8 @@ class BookingsRepository(BaseRepository):
     async def get_bookings_with_today_checkin(self):
         result = await self.session.execute(
             select(BookingsOrm).filter(
-                BookingsOrm.date_from == date.today(), BookingsOrm.status == BookingStatus.CONFIRMED.value
+                BookingsOrm.date_from == local_today(),
+                BookingsOrm.status == BookingStatus.CONFIRMED.value,
             )
         )
         return [self.mapper.map_to_domain_entity(item) for item in result.scalars().all()]
@@ -113,7 +115,7 @@ class BookingsRepository(BaseRepository):
         if review_id is not None:
             raise BookingHasReviewException
 
-        if date.today() >= booking.date_from:
+        if local_today() >= booking.date_from:
             raise BookingCancellationClosedException
 
         stmt = (

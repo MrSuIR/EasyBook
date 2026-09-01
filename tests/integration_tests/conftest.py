@@ -56,6 +56,8 @@ app.dependency_overrides[get_db] = get_test_db
 
 @pytest_asyncio.fixture(autouse=True)
 async def clean_database():
+    shutil.rmtree(image_dir, ignore_errors=True)
+    os.makedirs(image_dir, exist_ok=True)
     async with engine_null_pool.begin() as connection:
         await connection.run_sync(Base.metadata.drop_all)
         await connection.run_sync(Base.metadata.create_all)

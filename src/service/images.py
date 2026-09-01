@@ -35,11 +35,11 @@ class ImageService(BaseService):
 
     async def replace_image(self, hotel_id: int, image_id: UUID, file: UploadFile) -> HotelImageResponse:
         await self._check_hotel(hotel_id)
-        image = await self._get_image(hotel_id, image_id)
         validated = await validate_image_upload(file)
         relative_path = self._image_path(hotel_id, uuid4(), validated.extension)
         await write_image_file(relative_path, validated.content)
         try:
+            image = await self._get_image(hotel_id, image_id, for_update=True)
             updated = await self.db.images.edit(
                 data=HotelImagePathPatch(original_path=relative_path.as_posix()),
                 id=image_id,
@@ -54,7 +54,7 @@ class ImageService(BaseService):
         return self._to_response(updated)
 
     async def delete_image(self, hotel_id: int, image_id: UUID) -> None:
-        image = await self._get_image(hotel_id, image_id)
+        image = await self._get_image(hotel_id, image_id, for_update=True)
         await self.db.images.delete(id=image_id, hotel_id=hotel_id)
         await self.db.commit()
 
@@ -66,8 +66,10 @@ class ImageService(BaseService):
         except ObjectNotFoundException as ex:
             raise HotelNotFoundException from ex
 
-    async def _get_image(self, hotel_id: int, image_id: UUID):
+    async def _get_image(self, hotel_id: int, image_id: UUID, for_update: bool = False):
         try:
+            if for_update:
+                return await self.db.images.get_for_update(image_id, hotel_id)
             return await self.db.images.get_one(id=image_id, hotel_id=hotel_id)
         except ObjectNotFoundException as ex:
             raise ImageNotFoundException from ex

@@ -88,8 +88,6 @@ async def test_demo_seed_is_idempotent_and_creates_global_catalog(clean_database
             hotels = await db.hotels.get_filtered(location=destination.location)
             assert len(hotels) == destination.hotels_count
 
-        # clean_database intentionally leaves one unrelated hotel and room.
-        # Re-seeding must replace only the demo catalog and preserve user data.
         assert await db.hotels.count() == first.hotels + 1
         assert await db.rooms.count() == first.rooms + 1
         assert await db.bookings.count() == first.bookings

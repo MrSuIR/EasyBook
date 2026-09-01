@@ -21,7 +21,6 @@ def upgrade() -> None:
     op.add_column("users", sa.Column("first_name", sa.String(length=100), nullable=True))
     op.add_column("users", sa.Column("last_name", sa.String(length=100), nullable=True))
 
-    # Старые аккаунты не содержат данных, из которых можно восстановить реальные имена.
     op.execute(
         sa.text(
             "UPDATE users SET first_name = 'Не указано', last_name = 'Не указано' "

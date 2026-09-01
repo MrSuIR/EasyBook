@@ -1,0 +1,619 @@
+:root[data-theme="dark"] #top {
+  background-color: var(--page-alt);
+  background-image:
+    radial-gradient(
+      circle at 84% 13%,
+      rgba(121, 151, 255, 0.14),
+      rgba(121, 151, 255, 0.045) 21%,
+      transparent 39%
+    ),
+    radial-gradient(
+      circle at 1% 76%,
+      rgba(255, 145, 123, 0.09),
+      rgba(255, 145, 123, 0.025) 19%,
+      transparent 34%
+    );
+}
+:root[data-theme="dark"] #top::before {
+  mix-blend-mode: soft-light;
+  opacity: 0.055;
+}
+:root[data-theme="dark"] .home-route > path {
+  stroke: rgba(121, 151, 255, 0.32);
+}
+:root[data-theme="dark"] .home-route g circle:nth-child(odd) {
+  fill: var(--page-alt);
+  stroke: rgba(121, 151, 255, 0.5);
+}
+:root[data-theme="dark"] .home-route g circle:nth-child(even) {
+  fill: rgba(121, 151, 255, 0.78);
+}
+:root[data-theme="dark"] .home-contour::before,
+:root[data-theme="dark"] .home-contour::after,
+:root[data-theme="dark"] .home-contour-top {
+  border-color: rgba(121, 151, 255, 0.18);
+}
+:root[data-theme="dark"] .home-contour-bottom,
+:root[data-theme="dark"] .home-contour-bottom::before,
+:root[data-theme="dark"] .home-contour-bottom::after {
+  border-color: rgba(255, 145, 123, 0.15);
+}
+:root[data-theme="dark"] .search-bar {
+  border-color: rgba(121, 151, 255, 0.18);
+  background: rgba(24, 33, 48, 0.9);
+  box-shadow:
+    0 20px 48px rgba(3, 8, 18, 0.3),
+    inset 0 1px rgba(255, 255, 255, 0.025);
+}
+:root[data-theme="dark"] .search-field {
+  border-color: rgba(121, 151, 255, 0.2);
+}
+:root[data-theme="dark"] .search-field input,
+:root[data-theme="dark"] .search-field select,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select {
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .suggestions,
+:root[data-theme="dark"] .auth-modal {
+  border-color: var(--line);
+  background: var(--surface-elevated);
+  box-shadow: 0 24px 60px rgba(2, 7, 16, 0.42);
+}
+:root[data-theme="dark"] .suggestions button:hover,
+:root[data-theme="dark"] .auth-tabs {
+  background: var(--blue-soft);
+}
+:root[data-theme="dark"] .catalog-state {
+  border-color: #3b475a;
+}
+:root[data-theme="dark"] .catalog-state.error,
+:root[data-theme="dark"] .booking-error,
+:root[data-theme="dark"] .auth-form-error,
+:root[data-theme="dark"] .checkout-error {
+  border-color: #70404a;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+:root[data-theme="dark"] footer {
+  background: #101722;
+}
+:root[data-theme="dark"] footer > small {
+  color: #69758a;
+}
+:root[data-theme="dark"] .modal-close,
+:root[data-theme="dark"] .auth-tabs .active {
+  background: var(--surface);
+}
+:root[data-theme="dark"] .auth-tabs .active {
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.24);
+}
+:root[data-theme="dark"] .auth-modal input {
+  border-color: var(--line);
+  background: var(--field);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .account-auth-state,
+:root[data-theme="dark"] .hotel-details-state,
+:root[data-theme="dark"] .checkout-state {
+  background-color: var(--page-alt);
+  background-image:
+    radial-gradient(
+      circle at 82% 16%,
+      rgba(121, 151, 255, 0.14),
+      transparent 29%
+    ),
+    radial-gradient(
+      circle at 10% 84%,
+      rgba(255, 145, 123, 0.09),
+      transparent 25%
+    );
+}
+:root[data-theme="dark"] .account-page {
+  --account-primary: #7997ff;
+  --account-primary-hover: #91a9ff;
+  --account-primary-soft: #202d4f;
+  --account-text: #edf1f7;
+  --account-secondary: #9aa6ba;
+  --account-border: #2b3546;
+  --account-divider: #303b4d;
+}
+:root[data-theme="dark"] .account-page::before,
+:root[data-theme="dark"] .hotel-details-main::before {
+  background-color: var(--page-alt);
+  background-image:
+    radial-gradient(
+      circle at 88% 9%,
+      rgba(121, 151, 255, 0.14),
+      rgba(121, 151, 255, 0.035) 22%,
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 4% 91%,
+      rgba(255, 145, 123, 0.09),
+      rgba(255, 145, 123, 0.02) 20%,
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 94% 76%,
+      transparent 0 118px,
+      rgba(121, 151, 255, 0.12) 119px 120px,
+      transparent 121px 157px,
+      rgba(121, 151, 255, 0.075) 158px 159px,
+      transparent 160px
+    );
+}
+:root[data-theme="dark"] .account-profile-card,
+:root[data-theme="dark"] .bookings-panel,
+:root[data-theme="dark"] .booking-card,
+:root[data-theme="dark"] .account-booking,
+:root[data-theme="dark"] .account-empty,
+:root[data-theme="dark"] .account-more,
+:root[data-theme="dark"] .account-booking-skeleton {
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgba(2, 7, 16, 0.22);
+}
+:root[data-theme="dark"] .account-profile-nav button:hover,
+:root[data-theme="dark"] .account-sidebar nav a:hover,
+:root[data-theme="dark"] .account-sidebar nav button:hover,
+:root[data-theme="dark"] .account-logout:hover {
+  background: #202a3a;
+}
+:root[data-theme="dark"] .booking-tabs button {
+  color: var(--account-secondary);
+}
+:root[data-theme="dark"] .booking-status.completed,
+:root[data-theme="dark"] .account-status.completed {
+  background: #283241;
+  color: #b1bbca;
+}
+:root[data-theme="dark"] .booking-status.cancelled,
+:root[data-theme="dark"] .account-status.cancelled {
+  background: #3a252b;
+  color: #ff9a8d;
+}
+:root[data-theme="dark"] .account-status.confirmed {
+  background: #19372d;
+  color: #70d6a7;
+}
+:root[data-theme="dark"] .account-alert,
+:root[data-theme="dark"] .account-cancel-confirm {
+  background: #38252a;
+  color: #ffafa3;
+}
+:root[data-theme="dark"] .account-cancel-button {
+  border-color: #70444b;
+  background: transparent;
+  color: #ff9a8d;
+}
+:root[data-theme="dark"] .account-cancel-button:hover {
+  background: #38252a;
+}
+:root[data-theme="dark"] .account-filters,
+:root[data-theme="dark"] .account-sidebar {
+  border-color: var(--line);
+  background: var(--surface);
+}
+:root[data-theme="dark"] .account-filters button {
+  border-color: var(--line);
+  color: var(--muted);
+}
+:root[data-theme="dark"] .account-filters button span {
+  background: #252f40;
+  color: #a8b3c5;
+}
+:root[data-theme="dark"] .account-booking-skeleton span {
+  background: linear-gradient(90deg, #232d3d 25%, #303b4d 50%, #232d3d 75%);
+  background-size: 200% 100%;
+}
+:root[data-theme="dark"] .account-header-user {
+  color: var(--ink);
+}
+:root[data-theme="dark"] .account-header-user:hover,
+:root[data-theme="dark"] .user-menu.open .account-header-user {
+  background: #202a3a;
+}
+:root[data-theme="dark"] .account-profile-avatar {
+  background: linear-gradient(145deg, #293b65, #203052);
+  color: #a9bbff;
+}
+:root[data-theme="dark"] .user-dropdown {
+  border-color: var(--line);
+  background: var(--surface-elevated);
+  box-shadow: 0 20px 48px rgba(2, 7, 16, 0.42);
+}
+:root[data-theme="dark"] .user-dropdown button {
+  color: var(--ink);
+}
+:root[data-theme="dark"] .user-dropdown button:hover {
+  background: #222d3e;
+  color: var(--blue);
+}
+:root[data-theme="dark"] .user-dropdown button + button {
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .hotel-title-row nav {
+  color: #7f8b9d;
+}
+:root[data-theme="dark"] .hotel-title-row p,
+:root[data-theme="dark"] .hotel-room-description,
+:root[data-theme="dark"] .facility-item,
+:root[data-theme="dark"] .booking-price span,
+:root[data-theme="dark"] .booking-dates label span,
+:root[data-theme="dark"] .booking-total,
+:root[data-theme="dark"] .room-choice-card > small,
+:root[data-theme="dark"] .room-choice-card > b span,
+:root[data-theme="dark"] .hotel-review-grid time,
+:root[data-theme="dark"] .hotel-review-grid p {
+  color: var(--muted);
+}
+:root[data-theme="dark"] .hotel-information-grid > .booking-card,
+:root[data-theme="dark"] .room-choice-card {
+  border-color: var(--line);
+  background: var(--surface);
+}
+:root[data-theme="dark"] .booking-dates label {
+  border-color: var(--line);
+  background: var(--field);
+}
+:root[data-theme="dark"] .booking-dates input {
+  color: var(--ink);
+}
+:root[data-theme="dark"] .hotel-gallery img,
+:root[data-theme="dark"] .room-choice-image {
+  background: #273142;
+}
+:root[data-theme="dark"] .hotel-empty-state {
+  border-color: #3b475a;
+}
+:root[data-theme="dark"] .hotel-review-grid article {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+}
+
+:root[data-theme="dark"] .auth-page {
+  background: var(--page);
+}
+:root[data-theme="dark"] .auth-picture::after {
+  background: rgba(5, 12, 22, 0.3);
+}
+:root[data-theme="dark"] .auth-picture-panel {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(16, 23, 34, 0.75);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+}
+:root[data-theme="dark"] .auth-picture-panel > p {
+  color: #c3ccd9;
+}
+:root[data-theme="dark"] .auth-dots i {
+  background: #4a5668;
+}
+:root[data-theme="dark"] .auth-dots i.active {
+  background: #dce4f0;
+}
+:root[data-theme="dark"] .auth-form-side {
+  background-color: var(--page-alt);
+  background-image:
+    radial-gradient(
+      circle at 91% 12%,
+      rgba(121, 151, 255, 0.15),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 8% 88%,
+      rgba(255, 145, 123, 0.09),
+      transparent 27%
+    ),
+    radial-gradient(
+      circle at 104% 72%,
+      transparent 0 112px,
+      rgba(121, 151, 255, 0.13) 113px 114px,
+      transparent 115px 152px,
+      rgba(121, 151, 255, 0.075) 153px 154px,
+      transparent 155px
+    );
+}
+:root[data-theme="dark"] .auth-form-intro h1,
+:root[data-theme="dark"] .auth-field {
+  color: var(--ink);
+}
+:root[data-theme="dark"] .auth-field > input,
+:root[data-theme="dark"] .password-input,
+:root[data-theme="dark"] .password-input button {
+  border-color: var(--line);
+  background: var(--field);
+  color: var(--ink);
+}
+:root[data-theme="dark"] .auth-field input::placeholder {
+  color: #68758a;
+}
+:root[data-theme="dark"] .password-input input:-webkit-autofill,
+:root[data-theme="dark"] .password-input input:-webkit-autofill:hover,
+:root[data-theme="dark"] .password-input input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--field) inset;
+  box-shadow: 0 0 0 1000px var(--field) inset;
+}
+:root[data-theme="dark"] .auth-switch,
+:root[data-theme="dark"] .auth-policy {
+  color: var(--muted);
+}
+:root[data-theme="dark"] .auth-success {
+  background-color: var(--page-alt);
+  background-image:
+    radial-gradient(
+      circle at 85% 14%,
+      rgba(121, 151, 255, 0.16),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 10% 86%,
+      rgba(255, 145, 123, 0.1),
+      transparent 27%
+    );
+}
+:root[data-theme="dark"] .auth-success-card {
+  border-color: rgba(121, 151, 255, 0.14);
+  background: rgba(23, 31, 45, 0.92);
+  box-shadow: 0 28px 70px rgba(2, 7, 16, 0.36);
+}
+
+:root[data-theme="dark"] .checkout-page {
+  background-color: var(--page-alt);
+  background-image:
+    radial-gradient(
+      circle at 89% 14%,
+      rgba(121, 151, 255, 0.15),
+      transparent 29%
+    ),
+    radial-gradient(
+      circle at 6% 86%,
+      rgba(255, 145, 123, 0.09),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 101% 73%,
+      transparent 0 130px,
+      rgba(121, 151, 255, 0.13) 131px 132px,
+      transparent 133px 176px,
+      rgba(121, 151, 255, 0.08) 177px 178px,
+      transparent 179px
+    );
+  color: var(--ink);
+}
+:root[data-theme="dark"] .checkout-header {
+  border-color: var(--line);
+  background: var(--surface);
+}
+:root[data-theme="dark"] .checkout-header-actions > button:last-child {
+  color: var(--muted);
+}
+:root[data-theme="dark"] .checkout-steps li:not(:last-child)::after {
+  background: #354154;
+}
+:root[data-theme="dark"] .checkout-steps li > span {
+  border-color: #3a4659;
+  background: var(--page-alt);
+}
+:root[data-theme="dark"] .checkout-steps li.active,
+:root[data-theme="dark"] .checkout-steps li.done {
+  color: var(--ink);
+}
+:root[data-theme="dark"] .checkout-steps li.done > span {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+:root[data-theme="dark"] .checkout-form-card,
+:root[data-theme="dark"] .checkout-summary,
+:root[data-theme="dark"] .checkout-success-card {
+  border-color: var(--line);
+  background: var(--surface);
+  box-shadow: 0 20px 52px rgba(2, 7, 16, 0.28);
+}
+:root[data-theme="dark"] .checkout-form-card h1,
+:root[data-theme="dark"] .checkout-success-card h1,
+:root[data-theme="dark"] .checkout-summary h2 {
+  color: var(--ink);
+}
+:root[data-theme="dark"] .checkout-lead,
+:root[data-theme="dark"] .checkout-location,
+:root[data-theme="dark"] .checkout-room-name span,
+:root[data-theme="dark"] .checkout-stay-details dt,
+:root[data-theme="dark"] .checkout-price-row,
+:root[data-theme="dark"] .checkout-success-card > p:not(.checkout-kicker),
+:root[data-theme="dark"] .checkout-confirmation-details {
+  color: var(--muted);
+}
+:root[data-theme="dark"] .checkout-field-grid label,
+:root[data-theme="dark"] .checkout-checkbox,
+:root[data-theme="dark"] .checkout-stay-details dd,
+:root[data-theme="dark"] .checkout-price-row strong,
+:root[data-theme="dark"] .checkout-total-row,
+:root[data-theme="dark"] .checkout-confirmation-details strong {
+  color: var(--ink);
+}
+:root[data-theme="dark"] .checkout-field-grid input,
+:root[data-theme="dark"] .checkout-card-input {
+  border-color: var(--line);
+  background: var(--field);
+  color: var(--ink);
+}
+:root[data-theme="dark"] .checkout-card-input input {
+  background: transparent;
+}
+:root[data-theme="dark"] .checkout-secondary {
+  border-color: var(--line);
+  background: var(--surface-elevated);
+  color: #c0cad9;
+}
+:root[data-theme="dark"] .checkout-room-name,
+:root[data-theme="dark"] .checkout-price-row,
+:root[data-theme="dark"] .checkout-total-row,
+:root[data-theme="dark"] .checkout-confirmation-details {
+  border-color: var(--line);
+}
+:root[data-theme="dark"] .checkout-confirmation-number {
+  background: var(--blue-soft);
+}
+:root[data-theme="dark"] .checkout-success-icon {
+  background: #19372d;
+  color: #70d6a7;
+}
+
+@media (max-width: 720px) {
+  .theme-toggle {
+    width: 42px;
+    padding: 0;
+    justify-content: center;
+  }
+  .theme-toggle-label {
+    display: none;
+  }
+  .theme-toggle-floating {
+    width: auto;
+    padding-inline: 13px;
+  }
+  .theme-toggle-floating .theme-toggle-label {
+    display: inline;
+  }
+  :root[data-theme="dark"] .site-header nav,
+  :root[data-theme="dark"] .search-field {
+    background: var(--surface-elevated);
+  }
+}
+
+@media (max-width: 680px) {
+  :root[data-theme="dark"] .auth-page {
+    background:
+      linear-gradient(rgba(15, 20, 32, 0.92), rgba(15, 20, 32, 0.97)),
+      url("/images/hero-stay.png") center / cover fixed;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 850px) {
+  .checkout-form-card {
+    min-height: 0;
+    padding: 30px 42px;
+  }
+  .checkout-lead {
+    margin-block: 10px 22px;
+  }
+  .checkout-field-grid {
+    gap-block: 14px;
+  }
+  .checkout-field-grid input {
+    height: 48px;
+  }
+  .checkout-checkbox {
+    margin-block: 18px 20px;
+  }
+  .checkout-primary,
+  .checkout-secondary {
+    min-height: 48px;
+  }
+  .checkout-actions {
+    margin-top: 20px;
+  }
+  .checkout-summary > img {
+    height: 166px;
+  }
+  .checkout-summary-copy {
+    padding: 18px 27px 20px;
+  }
+  .checkout-location {
+    margin-bottom: 14px;
+  }
+  .checkout-room-name {
+    padding-block: 10px;
+  }
+  .checkout-stay-details {
+    margin-block: 12px;
+    gap-block: 12px;
+  }
+  .checkout-price-row {
+    padding-block: 11px;
+  }
+  .checkout-total-row {
+    padding-top: 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .checkout-page {
+    padding-bottom: 40px;
+  }
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+  .checkout-summary {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+  }
+  .checkout-summary > img {
+    height: 100%;
+    min-height: 340px;
+  }
+}
+
+@media (max-width: 620px) {
+  .checkout-header {
+    height: 70px;
+    padding-inline: 18px;
+  }
+  .checkout-header > button {
+    font-size: 0;
+  }
+  .checkout-steps {
+    margin-block: 30px 28px;
+  }
+  .checkout-steps li strong {
+    font-size: 9px;
+  }
+  .checkout-layout {
+    width: min(100% - 24px, 1140px);
+  }
+  .checkout-form-card {
+    min-height: 0;
+    padding: 30px 20px;
+    border-radius: 14px;
+  }
+  .checkout-form-card h1,
+  .checkout-success-card h1 {
+    font-size: 29px;
+  }
+  .checkout-field-grid {
+    grid-template-columns: 1fr;
+  }
+  .checkout-field-grid label.wide {
+    grid-column: auto;
+  }
+  .checkout-summary {
+    display: block;
+  }
+  .checkout-summary > img {
+    height: 190px;
+    min-height: 0;
+  }
+  .checkout-actions {
+    grid-template-columns: 1fr;
+  }
+  .checkout-actions .checkout-secondary {
+    order: 2;
+  }
+  .checkout-success-card {
+    min-height: calc(100vh - 180px);
+    padding: 42px 22px;
+    border-radius: 14px;
+  }
+  .checkout-confirmation-details {
+    flex-direction: column;
+    gap: 11px;
+  }
+  .checkout-success-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+}
