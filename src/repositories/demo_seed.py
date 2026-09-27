@@ -10,6 +10,7 @@ from sqlalchemy import delete, func, insert, or_, select, tuple_
 from src.constants import BookingStatus
 from src.models import BookingsOrm, HotelImagesOrm, HotelsOrm, ReviewsOrm, RoomsOrm
 from src.models.facilities import RoomsFacilitiesOrm
+from src.service.demo_catalog import demo_hotel_gallery
 
 if TYPE_CHECKING:
     from src.service.demo_catalog import DemoHotelSource
@@ -250,13 +251,14 @@ class DemoSeedRepository:
 
         image_values = []
         for hotel in catalog:
-            if not hotel.image_path:
-                continue
             hotel_id = hotel_ids_by_key[(hotel.title, hotel.location)]
-            image_id: UUID = uuid5(NAMESPACE_URL, f"easybook-demo:{hotel.location}:{hotel.title}")
-            image_values.append(
-                {"id": image_id, "hotel_id": hotel_id, "original_path": hotel.image_path}
-            )
+            for position, photo in enumerate(demo_hotel_gallery(catalog, hotel)):
+                image_id: UUID = uuid5(
+                    NAMESPACE_URL, f"easybook-demo:{hotel.location}:{hotel.title}:{position}"
+                )
+                image_values.append(
+                    {"id": image_id, "hotel_id": hotel_id, "original_path": photo.image_path}
+                )
         for batch in _batches(image_values):
             await self.session.execute(insert(HotelImagesOrm).values(batch))
         return DemoSeedDatabaseResult(

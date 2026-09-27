@@ -20,16 +20,19 @@ from src.utils.db_manager import DBManager
 class FakeCatalogProvider:
     def __init__(self, image_dir: Path):
         self.image_dir = image_dir
-        asset = image_dir / "assets" / "hotel.jpg"
-        asset.parent.mkdir(parents=True)
-        Image.new("RGB", (32, 24), "navy").save(asset, format="JPEG")
+        assets = image_dir / "assets"
+        assets.mkdir(parents=True)
+        for index in range(3):
+            Image.new("RGB", (32, 24), "navy").save(
+                assets / f"hotel-{index}.jpg", format="JPEG"
+            )
 
     async def load(self) -> tuple[DemoHotelSource, ...]:
         return tuple(
             DemoHotelSource(
                 title=f"Real Hotel {destination.title} {number:02d}",
                 location=destination.location,
-                image_path="assets/hotel.jpg",
+                image_path=f"assets/hotel-{(number - 1) % 3}.jpg",
                 image_source_url="https://upload.wikimedia.org/example.jpg",
                 image_page_url="https://commons.wikimedia.org/wiki/File:example.jpg",
                 image_author="Demo author",
@@ -73,7 +76,7 @@ async def test_demo_seed_is_idempotent_and_creates_global_catalog(clean_database
         assert first.rooms == first.hotels * 3
         assert first.bookings == first.hotels * 3
         assert first.reviews == first.hotels
-        assert first.images == first.hotels
+        assert first.images == first.hotels * 3
 
         auth = AuthService()
         for email, first_name, last_name, role in (

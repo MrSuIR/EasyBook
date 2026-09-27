@@ -24,6 +24,11 @@ import { localDateKey } from "../dateUtils.js";
 import { formatPrice, normalizeImageUrl } from "../utils/formatters.js";
 
 const hotelFallback = "/images/hotel-fallback.jpg";
+const roomImages = {
+  standard: "/images/room-standard.jpg",
+  comfort: "/images/room-comfort.jpg",
+  suite: "/images/room-suite.jpg",
+};
 
 function nightsBetween(dateFrom, dateTo) {
   return Math.max(
@@ -369,7 +374,7 @@ export default function HotelDetailsPage({
           </header>
           {rooms.length ? (
             <div className="room-choice-grid">
-              {rooms.map((room, index) => (
+              {rooms.map((room) => (
                 <button
                   className={`room-choice-card${room.id === selectedRoomId ? " selected" : ""}`}
                   type="button"
@@ -382,7 +387,7 @@ export default function HotelDetailsPage({
                   }}
                 >
                   <span className="room-choice-image">
-                    <img src={gallery[index % gallery.length]} alt="" />
+                    <img src={roomImages[room.title.toLowerCase()] || roomImages.standard} alt="" />
                     {room.id === selectedRoomId && <span>Выбрано</span>}
                   </span>
                   <strong>{room.title}</strong>
