@@ -64,6 +64,8 @@ export const api = {
     update: (hotelId, body) =>
       request(`/hotels/${hotelId}`, { method: "PUT", body }),
     delete: (hotelId) => request(`/hotels/${hotelId}`, { method: "DELETE" }),
+    setStatus: (hotelId, status) =>
+      request(`/hotels/${hotelId}/status`, { method: "PATCH", body: { status } }),
   },
   rooms: {
     list: (hotelId, query, options) =>

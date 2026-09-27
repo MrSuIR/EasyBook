@@ -24,6 +24,4 @@ async def remove_image_file(relative_path: str | Path) -> None:
     try:
         await run_in_threadpool(partial((settings.IMAGE_DIR / relative_path).unlink, missing_ok=True))
     except OSError:
-        logger.warning(
-            "Не удалось удалить файл изображения %s", settings.IMAGE_DIR / relative_path, exc_info=True
-        )
+        logger.warning("Не удалось удалить файл изображения %s", settings.IMAGE_DIR / relative_path, exc_info=True)

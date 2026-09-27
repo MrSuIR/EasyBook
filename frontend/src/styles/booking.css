@@ -18,36 +18,12 @@
 
 .checkout-page {
   min-height: 100dvh;
-  background-color: #f7f8fc;
-  background-image:
-    radial-gradient(
-      circle at 89% 14%,
-      rgba(49, 86, 217, 0.105),
-      transparent 29%
-    ),
-    radial-gradient(
-      circle at 6% 86%,
-      rgba(239, 119, 93, 0.075),
-      transparent 26%
-    ),
-    radial-gradient(
-      circle at 101% 73%,
-      transparent 0 130px,
-      rgba(49, 86, 217, 0.1) 131px 132px,
-      transparent 133px 176px,
-      rgba(49, 86, 217, 0.07) 177px 178px,
-      transparent 179px
-    ),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 1440 900' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-100 260C195 95 315 405 585 325S870 60 1160 190C1410 302 1270 550 1020 610S655 605 455 795' fill='none' stroke='%233156d9' stroke-opacity='.2' stroke-width='1.5' stroke-dasharray='7 11'/%3E%3Cg fill='%23f7f8fc' stroke='%233156d9' stroke-opacity='.34'%3E%3Ccircle cx='585' cy='325' r='7'/%3E%3Ccircle cx='1020' cy='610' r='7'/%3E%3C/g%3E%3Cg fill='%233156d9' fill-opacity='.58'%3E%3Ccircle cx='585' cy='325' r='2.5'/%3E%3Ccircle cx='1020' cy='610' r='2.5'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: auto, auto, auto, cover;
-  background-repeat: no-repeat;
   color: #131b2e;
 }
 .checkout-header {
   height: 82px;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 0 24px;
+  width: 100%;
+  padding: 0 max(24px, calc((100% - 1240px) / 2 + 24px));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -497,20 +473,6 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background-color: #f7f8fc;
-  background-image:
-    radial-gradient(
-      circle at 84% 14%,
-      rgba(49, 86, 217, 0.105),
-      transparent 29%
-    ),
-    radial-gradient(
-      circle at 9% 84%,
-      rgba(239, 119, 93, 0.075),
-      transparent 25%
-    ),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 1440 900' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-70 670C230 445 430 760 715 515S1120 245 1510 400' fill='none' stroke='%233156d9' stroke-opacity='.21' stroke-width='1.5' stroke-dasharray='7 11'/%3E%3C/svg%3E");
-  background-size: cover;
   color: #758092;
 }
 .checkout-state-error {

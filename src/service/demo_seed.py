@@ -1,8 +1,6 @@
 import json
-import shutil
 from dataclasses import dataclass
 from datetime import date
-from pathlib import Path
 from typing import Protocol
 
 from src.config import settings
@@ -62,6 +60,8 @@ _OLD_DEMO_CITIES = (
     "Мурманск",
 )
 LEGACY_DEMO_HOTEL_TITLES = (
+    "Hotel1",
+    "Hotel 1",
     "Metropol Demo",
     "Nevsky Demo",
     "Volga Demo",
@@ -73,8 +73,6 @@ LEGACY_DEMO_HOTEL_TITLES = (
 
 
 class DemoCatalogProviderProtocol(Protocol):
-    cache_dir: Path
-
     async def load(self) -> tuple[DemoHotelSource, ...]: ...
 
 
@@ -112,19 +110,8 @@ class DemoSeedService(BaseService):
             facilities={title: facility.id for title, facility in facilities.items()},
             today=today or local_today(),
         )
-        created_paths = []
-        try:
-            created_paths = self._copy_images(result.image_bindings)
-            await self.db.commit()
-        except Exception:
-            for path in created_paths:
-                path.unlink(missing_ok=True)
-            raise
-        self._remove_old_images(
-            result.old_image_paths,
-            preserved_paths={binding.relative_path for binding in result.image_bindings},
-        )
-        self._write_attribution(catalog, result.image_bindings)
+        await self.db.commit()
+        self._write_attribution(catalog)
         return DemoSeedSummary(
             users=len(users),
             facilities=len(facilities),
@@ -186,50 +173,48 @@ class DemoSeedService(BaseService):
             )
         return facilities
 
-    def _copy_images(self, bindings) -> list[Path]:
-        created = []
-        for binding in bindings:
-            source = self.catalog_provider.cache_dir / binding.source_path
-            destination = settings.IMAGE_DIR / binding.relative_path
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            destination_existed = destination.exists()
-            shutil.copyfile(source, destination)
-            if not destination_existed:
-                created.append(destination)
-        return created
-
     @staticmethod
-    def _remove_old_images(
-        relative_paths: tuple[str, ...], preserved_paths: set[str]
-    ) -> None:
-        for relative_path in relative_paths:
-            if relative_path in preserved_paths:
-                continue
-            path = settings.IMAGE_DIR / relative_path
-            path.unlink(missing_ok=True)
-            try:
-                path.parent.rmdir()
-            except OSError:
-                pass
-
-    @staticmethod
-    def _write_attribution(catalog, bindings) -> None:
-        if len(catalog) != len(bindings):
-            return
-        records = []
-        for hotel, binding in zip(catalog, bindings, strict=True):
-            records.append(
-                {
-                    "hotel": hotel.title,
-                    "location": hotel.location,
-                    "image_url": f"/static/images/{binding.relative_path}",
-                    "source_url": hotel.image_source_url,
-                    "source_page": hotel.image_page_url,
-                    "author": hotel.image_author,
-                    "license": hotel.image_license,
-                }
-            )
+    def _write_attribution(catalog) -> None:
         attribution_path = settings.IMAGE_DIR / "demo-image-attribution.json"
+        previous_records = (
+            json.loads(attribution_path.read_text(encoding="utf-8"))
+            if attribution_path.exists()
+            else []
+        )
+        records = [
+            {
+                "hotel": hotel.title,
+                "location": hotel.location,
+                "image_url": f"/static/images/{hotel.image_path}",
+                "source_url": hotel.image_source_url,
+                "source_page": hotel.image_page_url,
+                "author": hotel.image_author,
+                "license": hotel.image_license,
+                "license_url": hotel.image_license_url,
+            }
+            for hotel in catalog
+        ]
         attribution_path.write_text(
             json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8"
         )
+        current_paths = {hotel.image_path for hotel in catalog}
+        image_root = settings.IMAGE_DIR.resolve()
+        for record in previous_records:
+            image_url = record.get("image_url", "")
+            prefix = "/static/images/"
+            if not image_url.startswith(prefix):
+                continue
+            relative_path = image_url.removeprefix(prefix)
+            if not relative_path.startswith("hotels/") or relative_path in current_paths:
+                continue
+            old_image = (settings.IMAGE_DIR / relative_path).resolve()
+            if image_root not in old_image.parents:
+                continue
+            old_image.unlink(missing_ok=True)
+            parent = old_image.parent
+            while parent != image_root:
+                try:
+                    parent.rmdir()
+                except OSError:
+                    break
+                parent = parent.parent

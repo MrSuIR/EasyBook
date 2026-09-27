@@ -1,8 +1,9 @@
 from datetime import date
 from fastapi import APIRouter
+from src.constants import HotelStatus
 from src.api.dependencies import AdminUserDep, DBDep, PaginationDep
 from src.schemas.common import PaginatedResponse, SortOrder
-from src.schemas.hotels import Hotel, HotelAdd, HotelPatch, HotelSortBy
+from src.schemas.hotels import Hotel, HotelAdd, HotelPatch, HotelSortBy, HotelStatusUpdate
 from src.service.hotels import HotelService
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
@@ -29,9 +30,7 @@ async def get_hotels(
         sort_by=sort_by,
         sort_order=sort_order,
     )
-    return PaginatedResponse(
-        items=items, total=total, page=pagination.page, per_page=pagination.per_page
-    )
+    return PaginatedResponse(items=items, total=total, page=pagination.page, per_page=pagination.per_page)
 
 
 @router.get("/admin", response_model=PaginatedResponse[Hotel])
@@ -41,6 +40,7 @@ async def get_admin_hotels(
     _: AdminUserDep,
     title: str | None = None,
     location: str | None = None,
+    status: HotelStatus | None = None,
     sort_by: HotelSortBy | None = None,
     sort_order: SortOrder | None = None,
 ):
@@ -49,12 +49,11 @@ async def get_admin_hotels(
         per_page=pagination.per_page,
         title=title,
         location=location,
+        status=status,
         sort_by=sort_by,
         sort_order=sort_order,
     )
-    return PaginatedResponse(
-        items=items, total=total, page=pagination.page, per_page=pagination.per_page
-    )
+    return PaginatedResponse(items=items, total=total, page=pagination.page, per_page=pagination.per_page)
 
 
 @router.get("/{hotel_id}", response_model=Hotel)
@@ -85,3 +84,10 @@ async def patch_hotel(
 async def delete_hotel(hotel_id: int, db: DBDep, _: AdminUserDep):
     await HotelService(db).delete_hotel(hotel_id)
     return {"status": "OK"}
+
+
+@router.patch("/{hotel_id}/status", response_model=Hotel)
+async def set_hotel_status(
+    hotel_id: int, data: HotelStatusUpdate, db: DBDep, _: AdminUserDep
+):
+    return await HotelService(db).set_status(hotel_id, data)

@@ -12,7 +12,7 @@
   padding: clamp(28px, 4vw, 64px);
   display: grid;
   place-items: center;
-  background: url("/images/hero-stay.png") center / cover no-repeat;
+  background: url("/images/hero-stay.jpg") center / cover no-repeat;
 }
 .auth-picture::after {
   content: "";
@@ -72,29 +72,6 @@
   display: grid;
   place-items: center;
   overflow: hidden;
-  background-color: #f8f9fd;
-  background-image:
-    radial-gradient(
-      circle at 91% 12%,
-      rgba(49, 86, 217, 0.11),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 8% 88%,
-      rgba(239, 119, 93, 0.07),
-      transparent 27%
-    ),
-    radial-gradient(
-      circle at 104% 72%,
-      transparent 0 112px,
-      rgba(49, 86, 217, 0.1) 113px 114px,
-      transparent 115px 152px,
-      rgba(49, 86, 217, 0.065) 153px 154px,
-      transparent 155px
-    ),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 760 1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-95 205C130 75 225 345 438 290S625 75 820 165M-80 790C135 605 250 870 480 740S690 570 840 680' fill='none' stroke='%233156d9' stroke-opacity='.18' stroke-width='1.5' stroke-dasharray='7 11'/%3E%3Cg fill='%23f8f9fd' stroke='%233156d9' stroke-opacity='.34'%3E%3Ccircle cx='438' cy='290' r='7'/%3E%3Ccircle cx='480' cy='740' r='7'/%3E%3C/g%3E%3Cg fill='%233156d9' fill-opacity='.58'%3E%3Ccircle cx='438' cy='290' r='2.5'/%3E%3Ccircle cx='480' cy='740' r='2.5'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: auto, auto, auto, cover;
-  background-repeat: no-repeat;
 }
 .auth-form-card {
   width: min(100%, 480px);
@@ -115,14 +92,6 @@
 }
 .auth-form-intro {
   margin-bottom: 30px;
-}
-.auth-kicker {
-  margin: 0 0 10px;
-  color: var(--blue);
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-size: 11px;
-  font-weight: 800;
 }
 .auth-form-intro h1 {
   margin: 0;
@@ -210,20 +179,6 @@
 .password-input svg {
   width: 19px;
 }
-.auth-policy {
-  margin: -2px 0 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #687183;
-  font-size: 11px;
-  line-height: 1.5;
-}
-.auth-policy svg {
-  width: 17px;
-  flex: none;
-  color: var(--blue);
-}
 .auth-primary {
   width: 100%;
   height: 58px;
@@ -285,29 +240,6 @@
   padding: clamp(24px, 5vw, 76px);
   display: grid;
   place-items: center;
-  background-color: #f7f8fc;
-  background-image:
-    radial-gradient(
-      circle at 85% 14%,
-      rgba(49, 86, 217, 0.13),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 10% 86%,
-      rgba(239, 119, 93, 0.09),
-      transparent 27%
-    ),
-    radial-gradient(
-      circle at 1% 20%,
-      transparent 0 140px,
-      rgba(239, 119, 93, 0.12) 141px 142px,
-      transparent 143px 187px,
-      rgba(239, 119, 93, 0.08) 188px 189px,
-      transparent 190px
-    ),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 1440 900' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-85 675C215 470 390 770 680 520S1090 205 1515 390' fill='none' stroke='%233156d9' stroke-opacity='.23' stroke-width='1.5' stroke-dasharray='7 11'/%3E%3Cg fill='%23f7f8fc' stroke='%233156d9' stroke-opacity='.38'%3E%3Ccircle cx='680' cy='520' r='8'/%3E%3C/g%3E%3Ccircle cx='680' cy='520' r='3' fill='%233156d9' fill-opacity='.62'/%3E%3C/svg%3E");
-  background-size: auto, auto, auto, cover;
-  background-repeat: no-repeat;
 }
 .auth-success-card {
   position: relative;
@@ -344,12 +276,6 @@
   line-height: 1.08;
   letter-spacing: -3px;
 }
-.auth-success-card > p:not(.auth-kicker) {
-  margin: 18px 0 34px;
-  color: var(--ink);
-  font-size: 16px;
-  line-height: 1.7;
-}
 .auth-success-card .auth-primary {
   max-width: 372px;
 }
@@ -381,7 +307,7 @@
     min-height: 0;
     background:
       linear-gradient(rgba(255, 255, 255, 0.91), rgba(255, 255, 255, 0.97)),
-      url("/images/hero-stay.png") center / cover fixed;
+      url("/images/hero-stay.jpg") center / cover fixed;
   }
   .auth-picture {
     display: none;

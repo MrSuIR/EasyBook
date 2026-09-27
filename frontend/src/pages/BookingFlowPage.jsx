@@ -16,7 +16,7 @@ import { api } from "../api.js";
 import ThemeToggle from "../theme.jsx";
 import { formatPrice } from "../utils/formatters.js";
 
-const fallbackImage = "/images/hero-stay.png";
+const fallbackImage = "/images/hotel-fallback.jpg";
 
 function formatDate(value) {
   return new Intl.DateTimeFormat("ru-RU", {
@@ -62,7 +62,7 @@ function BookingSummary({ hotel, room, image, dateFrom, dateTo, nights }) {
   const total = room.price * nights;
   return (
     <aside className="checkout-summary">
-      <img src={image} alt={hotel.title} />
+      <img src={image} alt={`Фотография для отеля ${hotel.title}`} />
       <div className="checkout-summary-copy">
         <p className="checkout-kicker">Ваше бронирование</p>
         <h2>{hotel.title}</h2>

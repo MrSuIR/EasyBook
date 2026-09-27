@@ -9,7 +9,6 @@ import {
   MessageSquare,
   Moon,
   Pencil,
-  Save,
   Star,
   Trash2,
   UserRound,
@@ -131,106 +130,76 @@ function ProfileEditor({ user, onUserUpdate }) {
   };
   return (
     <section className="bookings-panel profile-editor">
-      <h2>Личные данные</h2>
+      <header className="profile-editor-heading">
+        <div className="profile-editor-mark" aria-hidden="true">
+          {form.first_name.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <p>Профиль гостя</p>
+          <h2>Личные данные</h2>
+          <span>Используем их для бронирований и связи с вами.</span>
+        </div>
+      </header>
       <form onSubmit={submit}>
-        <label>
-          Имя
-          <input
-            required
-            maxLength="100"
-            value={form.first_name}
-            onChange={(event) =>
-              setForm({ ...form, first_name: event.target.value })
-            }
-          />
-        </label>
-        <label>
-          Фамилия
-          <input
-            required
-            maxLength="100"
-            value={form.last_name}
-            onChange={(event) =>
-              setForm({ ...form, last_name: event.target.value })
-            }
-          />
-        </label>
-        <label>
-          Email
-          <input
-            required
-            type="email"
-            value={form.email}
-            onChange={(event) =>
-              setForm({ ...form, email: event.target.value })
-            }
-          />
-        </label>
-        {message && <p className="profile-success">{message}</p>}
-        {error && (
-          <p className="booking-load-error" role="alert">
-            {error}
-          </p>
-        )}
-        <button className="booking-details-button" type="submit">
-          <Save />
-          Сохранить
-        </button>
+        <div className="profile-field-grid">
+          <label>
+            <span>Имя</span>
+            <input
+              required
+              maxLength="100"
+              autoComplete="given-name"
+              value={form.first_name}
+              onChange={(event) =>
+                setForm({ ...form, first_name: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            <span>Фамилия</span>
+            <input
+              required
+              maxLength="100"
+              autoComplete="family-name"
+              value={form.last_name}
+              onChange={(event) =>
+                setForm({ ...form, last_name: event.target.value })
+              }
+            />
+          </label>
+          <label className="profile-email-field">
+            <span>Email</span>
+            <input
+              required
+              type="email"
+              autoComplete="email"
+              value={form.email}
+              onChange={(event) =>
+                setForm({ ...form, email: event.target.value })
+              }
+            />
+            <small>На этот адрес привязана ваша учётная запись.</small>
+          </label>
+        </div>
+        <div className="profile-editor-actions">
+          <div aria-live="polite">
+            {message && <p className="profile-success">{message}</p>}
+            {error && (
+              <p className="booking-load-error" role="alert">{error}</p>
+            )}
+          </div>
+          <button className="profile-save-button" type="submit">
+            Сохранить изменения
+          </button>
+        </div>
       </form>
     </section>
   );
 }
 
-function ReviewsPanel({ bookings }) {
-  const [reviews, setReviews] = useState([]);
+function ReviewsPanel({ reviews, onReviewsChange }) {
   const [editing, setEditing] = useState(null);
   const [drafts, setDrafts] = useState({});
   const [error, setError] = useState("");
-  const load = useCallback(async () => {
-    try {
-      setReviews(await api.reviews.mine());
-      setError("");
-    } catch (exception) {
-      setError(exception.message);
-    }
-  }, []);
-  useEffect(() => {
-    const request = window.requestAnimationFrame(load);
-    return () => window.cancelAnimationFrame(request);
-  }, [load]);
-  const reviewByBooking = new Map(
-    reviews.map((review) => [review.booking_id, review]),
-  );
-  const eligible = bookings.filter(
-    (booking) =>
-      booking.status === "confirmed" &&
-      booking.date_to <= localDateKey() &&
-      !reviewByBooking.has(booking.id),
-  );
-  const setDraft = (bookingId, field, value) =>
-    setDrafts((current) => ({
-      ...current,
-      [bookingId]: {
-        rating: 5,
-        comment: "",
-        ...current[bookingId],
-        [field]: value,
-      },
-    }));
-  const create = async (bookingId) => {
-    const draft = { rating: 5, comment: "", ...drafts[bookingId] };
-    try {
-      await api.reviews.create({
-        booking_id: bookingId,
-        rating: Number(draft.rating),
-        comment: draft.comment,
-      });
-      await load();
-      setDrafts((current) => ({ ...current, [bookingId]: undefined }));
-    } catch (exception) {
-      setError(exception.message);
-    }
-  };
   const update = async (review) => {
     const draft = drafts[`review-${review.id}`] || {
       rating: review.rating,
@@ -242,7 +211,7 @@ function ReviewsPanel({ bookings }) {
         comment: draft.comment,
       });
       setEditing(null);
-      await load();
+      await onReviewsChange();
     } catch (exception) {
       setError(exception.message);
     }
@@ -251,7 +220,7 @@ function ReviewsPanel({ bookings }) {
     if (!window.confirm("Удалить отзыв?")) return;
     try {
       await api.reviews.delete(review.id);
-      await load();
+      await onReviewsChange();
     } catch (exception) {
       setError(exception.message);
     }
@@ -264,48 +233,6 @@ function ReviewsPanel({ bookings }) {
           {error}
         </div>
       )}
-      {eligible.map((booking) => {
-        const draft = drafts[booking.id] || { rating: 5, comment: "" };
-        return (
-          <article className="review-editor" key={booking.id}>
-            <h3>Бронирование № {booking.id}</h3>
-            <label>
-              Оценка
-              <select
-                value={draft.rating}
-                onChange={(event) =>
-                  setDraft(booking.id, "rating", event.target.value)
-                }
-              >
-                {[5, 4, 3, 2, 1].map((rating) => (
-                  <option key={rating} value={rating}>
-                    {rating}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Комментарий
-              <textarea
-                required
-                maxLength="2000"
-                value={draft.comment}
-                onChange={(event) =>
-                  setDraft(booking.id, "comment", event.target.value)
-                }
-              />
-            </label>
-            <button
-              type="button"
-              disabled={!draft.comment.trim()}
-              onClick={() => create(booking.id)}
-            >
-              <Star />
-              Опубликовать
-            </button>
-          </article>
-        );
-      })}
       {reviews.map((review) => {
         const isEditing = editing === review.id;
         const draft = drafts[`review-${review.id}`] || {
@@ -384,7 +311,6 @@ function ReviewsPanel({ bookings }) {
                   />
                 </label>
                 <button type="button" onClick={() => update(review)}>
-                  <Save />
                   Сохранить
                 </button>
               </>
@@ -394,17 +320,103 @@ function ReviewsPanel({ bookings }) {
           </article>
         );
       })}
-      {!eligible.length && !reviews.length && (
+      {!reviews.length && (
         <div className="booking-past-empty">
           <MessageSquare />
-          <p>После завершённой поездки здесь можно будет оставить отзыв.</p>
+          <p>Вы пока не оставляли отзывов.</p>
+          <small>
+            Оставить отзыв можно в завершённом бронировании.
+          </small>
         </div>
       )}
     </section>
   );
 }
 
-function BookingCard({ booking, cancelling, onCancel, onNavigate }) {
+function ReviewComposer({ booking, onClose, onSubmitted }) {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      await api.reviews.create({ booking_id: booking.id, rating, comment });
+      await onSubmitted();
+      onClose();
+    } catch (exception) {
+      setError(exception.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="review-modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <section
+        className="review-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="review-modal-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <header>
+          <div>
+            <span>Завершённая поездка</span>
+            <h2 id="review-modal-title">Поделитесь впечатлениями</h2>
+            <p>Бронирование № {booking.id}</p>
+          </div>
+          <button type="button" aria-label="Закрыть" onClick={onClose}>
+            <CircleX />
+          </button>
+        </header>
+        <form onSubmit={submit}>
+          <fieldset>
+            <legend>Ваша оценка</legend>
+            <div className="review-rating" aria-label={`${rating} из 5`}>
+              {[1, 2, 3, 4, 5].map((value) => (
+                <button
+                  className={value <= rating ? "active" : ""}
+                  type="button"
+                  key={value}
+                  aria-label={`${value} из 5`}
+                  onClick={() => setRating(value)}
+                >
+                  <Star />
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <label>
+            Что особенно запомнилось?
+            <textarea
+              required
+              autoFocus
+              maxLength="2000"
+              rows="6"
+              placeholder="Расскажите о номере, сервисе и впечатлениях от поездки"
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+            />
+          </label>
+          {error && <p className="booking-load-error" role="alert">{error}</p>}
+          <div className="review-modal-actions">
+            <button type="button" className="secondary" onClick={onClose}>Позже</button>
+            <button type="submit" disabled={saving || !comment.trim()}>
+              {saving ? <LoaderCircle className="spin" /> : <Star />}
+              {saving ? "Публикуем…" : "Опубликовать отзыв"}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function BookingCard({ booking, cancelling, hasReview, onCancel, onNavigate, onReview }) {
   const nights = formatNights(booking);
   const [statusClass, statusLabel] = getStatus(booking);
   const metadata = [
@@ -419,12 +431,8 @@ function BookingCard({ booking, cancelling, onCancel, onNavigate }) {
     <article className="booking-card">
       <img
         className="booking-card-image"
-        src={
-          booking.room_id % 2
-            ? "/images/account-radisson.jpg"
-            : "/images/account-metropol.jpg"
-        }
-        alt="Интерьер номера"
+        src="/images/hotel-fallback.jpg"
+        alt="Иллюстрация отеля"
       />
       <div className="booking-card-content">
         <header className="booking-card-header">
@@ -465,6 +473,19 @@ function BookingCard({ booking, cancelling, onCancel, onNavigate }) {
             </span>
           </div>
           <div className="booking-actions">
+            {statusClass === "completed" && !hasReview && (
+              <button
+                className="booking-review-button"
+                type="button"
+                onClick={() => onReview(booking)}
+              >
+                <Star />
+                Оставить отзыв
+              </button>
+            )}
+            {statusClass === "completed" && hasReview && (
+              <span className="booking-reviewed"><CircleCheck /> Отзыв опубликован</span>
+            )}
             <button
               className="booking-details-button"
               type="button"
@@ -505,6 +526,20 @@ export default function AccountPage({ user, onNavigate, onUserUpdate }) {
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [cancellingId, setCancellingId] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewBooking, setReviewBooking] = useState(null);
+
+  const loadReviews = useCallback(async () => {
+    const items = await api.reviews.mine();
+    setReviews(items);
+  }, []);
+
+  useEffect(() => {
+    const request = window.requestAnimationFrame(() => {
+      loadReviews().catch(() => setReviews([]));
+    });
+    return () => window.cancelAnimationFrame(request);
+  }, [loadReviews, user.id]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -620,8 +655,12 @@ export default function AccountPage({ user, onNavigate, onUserUpdate }) {
                     booking={booking}
                     key={booking.id}
                     cancelling={cancellingId === booking.id}
+                    hasReview={reviews.some(
+                      (review) => review.booking_id === booking.id,
+                    )}
                     onCancel={cancelBooking}
                     onNavigate={onNavigate}
+                    onReview={setReviewBooking}
                   />
                 ))
               ) : (
@@ -646,7 +685,9 @@ export default function AccountPage({ user, onNavigate, onUserUpdate }) {
             </div>
           </section>
         )}
-        {area === "reviews" && <ReviewsPanel bookings={currentBookings} />}
+        {area === "reviews" && (
+          <ReviewsPanel reviews={reviews} onReviewsChange={loadReviews} />
+        )}
         {area === "profile" && (
           <ProfileEditor user={user} onUserUpdate={onUserUpdate} />
         )}
@@ -660,6 +701,13 @@ export default function AccountPage({ user, onNavigate, onUserUpdate }) {
       >
         <ChevronDown />
       </button>
+      {reviewBooking && (
+        <ReviewComposer
+          booking={reviewBooking}
+          onClose={() => setReviewBooking(null)}
+          onSubmitted={loadReviews}
+        />
+      )}
     </main>
   );
 }

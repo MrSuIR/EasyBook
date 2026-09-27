@@ -117,6 +117,30 @@ async def test_admin_catalog_includes_hotels_without_rooms_and_supports_partial_
 
 
 @pytest.mark.asyncio
+async def test_public_location_search_matches_city_only_hotel_with_country_suggestion(
+    anonymous_client, admin_client, clean_database
+):
+    city_only_id = await create_available_hotel(admin_client, "Городской отель", "Йошкар-Ола")
+    another_country_id = await create_available_hotel(
+        admin_client, "Другой отель", "Йошкар-Ола, Другая страна"
+    )
+    start = date.today() + timedelta(days=1)
+    response = await anonymous_client.get(
+        "/hotels",
+        params={
+            "date_from": start,
+            "date_to": start + timedelta(days=3),
+            "location": "Йошкар-Ола, Россия",
+        },
+    )
+
+    assert response.status_code == 200
+    ids = {item["id"] for item in response.json()["items"]}
+    assert city_only_id in ids
+    assert another_country_id not in ids
+
+
+@pytest.mark.asyncio
 async def test_hotel_patch_rejects_explicit_null(admin_client, clean_database):
     response = await admin_client.patch(
         f"/hotels/{clean_database['hotel_id']}", json={"title": None}

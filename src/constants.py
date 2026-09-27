@@ -9,3 +9,8 @@ class UserRole(StrEnum):
 class BookingStatus(StrEnum):
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
+
+
+class HotelStatus(StrEnum):
+    ACTIVE = "active"
+    ARCHIVED = "archived"

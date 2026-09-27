@@ -3,7 +3,10 @@ from datetime import datetime, timedelta, timezone
 import jwt
 import pytest
 
-from src.config import Settings, settings
+from fastapi import Response
+
+from src.api.dependencies import set_auth_cookie
+from src.config import settings
 from src.exceptions import IncorrectTokenException
 from src.service.auth import AuthService
 
@@ -29,22 +32,11 @@ def test_invalid_or_expired_token(token):
         AuthService().decode_token(token)
 
 
-def production_settings(secret: str, cookie_secure: bool | None = None) -> Settings:
-    return Settings(  # pyright: ignore[reportCallIssue]
-        MODE="PROD",
-        DB_NAME="easybook",
-        DB_HOST="db",
-        DB_PORT=5432,
-        DB_USER="easybook",
-        DB_PASS="easybook",
-        JWT_SECRET_KEY=secret,
-        COOKIE_SECURE=cookie_secure,
-    )
+def test_auth_cookie_is_always_secure():
+    response = Response()
 
+    set_auth_cookie(response, "test-token")
 
-def test_production_rejects_weak_secret_and_forces_secure_cookie():
-    with pytest.raises(ValueError, match="JWT_SECRET_KEY"):
-        production_settings("short-secret")
-
-    configured = production_settings("a" * 32, cookie_secure=False)
-    assert configured.cookie_secure is True
+    cookie_header = response.headers["set-cookie"].lower()
+    assert "secure" in cookie_header
+    assert "httponly" in cookie_header

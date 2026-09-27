@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { Pencil, Save, Trash2, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { api } from "../../api.js";
 import { ErrorMessage, LoadingState } from "./AdminStates.jsx";
@@ -9,6 +9,9 @@ export default function UserPanel({ currentUser }) {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(emptyUser);
   const [editing, setEditing] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formError, setFormError] = useState("");
+  const dialogRef = useRef(null);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -36,18 +39,35 @@ export default function UserPanel({ currentUser }) {
     const request = window.requestAnimationFrame(load);
     return () => window.cancelAnimationFrame(request);
   }, [load]);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (formOpen && !dialog.open) dialog.showModal();
+    if (!formOpen && dialog.open) dialog.close();
+  }, [formOpen]);
+  const closeForm = () => {
+    setFormOpen(false);
+    setForm(emptyUser);
+    setEditing(null);
+    setFormError("");
+  };
+  const create = () => {
+    setEditing(null);
+    setForm(emptyUser);
+    setFormError("");
+    setFormOpen(true);
+  };
   const save = async (event) => {
     event.preventDefault();
+    setFormError("");
     try {
       const payload = { ...form };
       if (editing && !payload.password) delete payload.password;
       if (editing) await api.users.update(editing, payload);
       else await api.users.create(payload);
-      setForm(emptyUser);
-      setEditing(null);
+      closeForm();
       await load();
     } catch (exception) {
-      setError(exception.message);
+      setFormError(exception.message);
     }
   };
   const edit = (item) => {
@@ -59,29 +79,50 @@ export default function UserPanel({ currentUser }) {
       password: "",
       role: item.role,
     });
+    setFormError("");
+    setFormOpen(true);
   };
   return (
     <section className="admin-panel">
       <div className="admin-section-heading">
         <div>
-          <p className="eyebrow">Доступ</p>
           <h2>Пользователи</h2>
         </div>
-        <input
-          placeholder="Имя или email"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
+        <div className="admin-user-heading-actions">
+          <input
+            aria-label="Поиск пользователей"
+            placeholder="Имя или email"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+          <button type="button" onClick={create}>
+            <Plus aria-hidden="true" />
+            Создать пользователя
+          </button>
+        </div>
       </div>
       <ErrorMessage error={error} />
+      <dialog
+        className="admin-user-dialog"
+        ref={dialogRef}
+        onClose={closeForm}
+        onClick={(event) => {
+          if (event.target === dialogRef.current) closeForm();
+        }}
+        aria-labelledby="admin-user-dialog-title"
+      >
       <form className="admin-form" onSubmit={save}>
-        <h3>
+        <button className="admin-user-dialog-close" type="button" aria-label="Закрыть" onClick={closeForm}>
+          <X aria-hidden="true" />
+        </button>
+        <h3 id="admin-user-dialog-title">
           {editing ? "Редактирование пользователя" : "Новый пользователь"}
         </h3>
         <div className="admin-field-grid">
           <label>
             Email
             <input
+              autoFocus
               required
               type="email"
               value={form.email}
@@ -139,26 +180,13 @@ export default function UserPanel({ currentUser }) {
             />
           </label>
         </div>
+        {formError && <p className="admin-error" role="alert">{formError}</p>}
         <div className="admin-form-actions">
-          <button type="submit">
-            <Save />
-            Сохранить
-          </button>
-          {editing && (
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => {
-                setEditing(null);
-                setForm(emptyUser);
-              }}
-            >
-              <X />
-              Отмена
-            </button>
-          )}
+          <button type="submit">Сохранить</button>
+          <button type="button" className="secondary" onClick={closeForm}>Отмена</button>
         </div>
       </form>
+      </dialog>
       {loading ? (
         <LoadingState />
       ) : (
@@ -183,7 +211,7 @@ export default function UserPanel({ currentUser }) {
                   <td>{item.email}</td>
                   <td>{item.role}</td>
                   <td>
-                    <button type="button" onClick={() => edit(item)}>
+                    <button type="button" aria-label={`Редактировать ${item.email}`} onClick={() => edit(item)}>
                       <Pencil />
                     </button>
                     <button

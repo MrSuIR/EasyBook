@@ -84,3 +84,74 @@ async def test_room_description_is_required_and_limited(admin_client, clean_data
         f"{endpoint}/{room_id}", json={"title": "Room", "price": 2, "quantity": 1, "facilities_ids": []}
     )
     assert put_without_description.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_room_patch_rejects_null_scalar_fields(admin_client, clean_database):
+    hotel_id = clean_database["hotel_id"]
+    room_id = clean_database["room_id"]
+    for field in ("title", "price", "quantity"):
+        response = await admin_client.patch(f"/hotels/{hotel_id}/rooms/{room_id}", json={field: None})
+        assert response.status_code == 422
+        assert response.json()["code"] == "validation_error"
+
+
+@pytest.mark.asyncio
+async def test_room_quantity_cannot_drop_below_peak_occupancy(client, admin_client, clean_database):
+    hotel_id = clean_database["hotel_id"]
+    room_data = {
+        "title": "Double",
+        "description": "Номер с двумя доступными экземплярами",
+        "price": 2500,
+        "quantity": 2,
+        "facilities_ids": [],
+    }
+    created = await admin_client.post(f"/hotels/{hotel_id}/rooms", json=room_data)
+    assert created.status_code == 201
+    room_id = created.json()["id"]
+    endpoint = f"/hotels/{hotel_id}/rooms/{room_id}"
+    start = date.today() + timedelta(days=1)
+
+    async def book(date_from, date_to):
+        return await client.post(
+            "/bookings",
+            json={"room_id": room_id, "date_from": date_from.isoformat(), "date_to": date_to.isoformat()},
+        )
+
+    first = await book(start, start + timedelta(days=2))
+    second = await book(start, start + timedelta(days=2))
+    assert first.status_code == second.status_code == 201
+
+    patch = await admin_client.patch(endpoint, json={"quantity": 1})
+    put = await admin_client.put(endpoint, json=room_data | {"quantity": 1})
+    for response in (patch, put):
+        assert response.status_code == 409
+        assert response.json()["code"] == "room_quantity_below_bookings"
+
+    assert (await client.post(f"/bookings/{second.json()['id']}/cancel")).status_code == 200
+    assert (await admin_client.patch(endpoint, json={"quantity": 1})).status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_adjacent_bookings_allow_quantity_reduction(client, admin_client, clean_database):
+    hotel_id = clean_database["hotel_id"]
+    room_data = {
+        "title": "Adjacent",
+        "description": "Номер для проверки непересекающихся бронирований",
+        "price": 2500,
+        "quantity": 2,
+        "facilities_ids": [],
+    }
+    room_id = (await admin_client.post(f"/hotels/{hotel_id}/rooms", json=room_data)).json()["id"]
+    start = date.today() + timedelta(days=1)
+    for date_from, date_to in ((start, start + timedelta(days=2)), (start + timedelta(days=2), start + timedelta(days=4))):
+        response = await client.post(
+            "/bookings",
+            json={"room_id": room_id, "date_from": date_from.isoformat(), "date_to": date_to.isoformat()},
+        )
+        assert response.status_code == 201
+
+    response = await admin_client.put(
+        f"/hotels/{hotel_id}/rooms/{room_id}", json=room_data | {"quantity": 1}
+    )
+    assert response.status_code == 200

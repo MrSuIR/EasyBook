@@ -91,7 +91,7 @@ async def clean_database():
 
 
 async def _client_for(email: str | None = None) -> AsyncIterator[AsyncClient]:
-    client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+    client = AsyncClient(transport=ASGITransport(app=app), base_url="https://test")
     if email:
         from src.database import async_session_maker_null_pool
 

@@ -1,14 +1,15 @@
 from datetime import datetime, timezone
 from sqlalchemy import func, select, update
-from src.constants import BookingStatus
+from src.constants import BookingStatus, HotelStatus
 from src.exceptions import (
     AllRoomsAreBookedException,
     BookingCancellationClosedException,
     BookingHasReviewException,
     BookingNotFoundException,
+    HotelArchivedException,
     RoomNotFoundException,
 )
-from src.models import BookingsOrm, ReviewsOrm, RoomsOrm
+from src.models import BookingsOrm, HotelsOrm, ReviewsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import BookingDataMapper
 from src.repositories.utils import sort_expression
@@ -42,15 +43,6 @@ class BookingsRepository(BaseRepository):
             raise BookingNotFoundException
         return self.mapper.map_to_domain_entity(booking)
 
-    async def get_bookings_with_today_checkin(self):
-        result = await self.session.execute(
-            select(BookingsOrm).filter(
-                BookingsOrm.date_from == local_today(),
-                BookingsOrm.status == BookingStatus.CONFIRMED.value,
-            )
-        )
-        return [self.mapper.map_to_domain_entity(item) for item in result.scalars().all()]
-
     async def get_paginated(self, limit: int, offset: int, sort_by: BookingSortBy, sort_order: SortOrder):
         sort_columns = {
             BookingSortBy.ID: BookingsOrm.id,
@@ -70,6 +62,18 @@ class BookingsRepository(BaseRepository):
         return [self.mapper.map_to_domain_entity(item) for item in result.scalars().all()], await self.count()
 
     async def add_booking(self, data: BookingCreate):
+        hotel_query = (
+            select(HotelsOrm)
+            .join(RoomsOrm, RoomsOrm.hotel_id == HotelsOrm.id)
+            .where(RoomsOrm.id == data.room_id)
+            .with_for_update(of=HotelsOrm)
+        )
+        hotel = (await self.session.execute(hotel_query)).scalars().one_or_none()
+        if hotel is None:
+            raise RoomNotFoundException
+        if hotel.status == HotelStatus.ARCHIVED.value:
+            raise HotelArchivedException
+
         room_query = select(RoomsOrm).where(RoomsOrm.id == data.room_id).with_for_update()
         room = (await self.session.execute(room_query)).scalars().one_or_none()
         if room is None:
