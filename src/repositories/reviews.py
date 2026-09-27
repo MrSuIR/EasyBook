@@ -54,10 +54,6 @@ class ReviewsRepository(BaseRepository):
         total = (await self.session.execute(count_query)).scalar_one()
         return [self.mapper.map_to_domain_entity(item) for item in items], total
 
-    async def exists_for_booking(self, booking_id: int) -> bool:
-        query = select(ReviewsOrm.id).where(ReviewsOrm.booking_id == booking_id)
-        return (await self.session.execute(query)).scalar_one_or_none() is not None
-
     async def edit_review(self, review_id: int, data: ReviewPatch):
         values = data.model_dump(exclude_unset=True)
         values["updated_at"] = func.now()

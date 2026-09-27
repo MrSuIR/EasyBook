@@ -73,14 +73,23 @@ class RoomPatchRequest(BaseModel):
     quantity: int | None = Field(default=None, gt=0)
     facilities_ids: list[int] | None = None
 
-    @field_validator("title")
+    @field_validator("title", mode="before")
     @classmethod
-    def strip_optional_title(cls, value: str | None) -> str | None:
+    def strip_optional_title(cls, value: Any) -> Any:
         if value is None:
-            return None
+            raise ValueError("Название не может быть null")
+        if not isinstance(value, str):
+            return value
         value = value.strip()
         if not value:
             raise ValueError("Название не может быть пустым")
+        return value
+
+    @field_validator("price", "quantity", mode="before")
+    @classmethod
+    def reject_null_number(cls, value: Any) -> Any:
+        if value is None:
+            raise ValueError("Значение не может быть null")
         return value
 
     @field_validator("description", mode="before")
@@ -89,9 +98,6 @@ class RoomPatchRequest(BaseModel):
         if value is None:
             raise ValueError("Описание не может быть null")
         return _strip_description(value)
-
-
-RoomPatchReqeust = RoomPatchRequest
 
 
 class Room(RoomAdd):

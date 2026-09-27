@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 from pydantic import BaseModel, Field, field_validator
+from src.constants import HotelStatus
 
 
 class HotelSortBy(StrEnum):
@@ -24,6 +25,11 @@ class HotelAdd(BaseModel):
 
 class Hotel(HotelAdd):
     id: int
+    status: HotelStatus
+
+
+class HotelStatusUpdate(BaseModel):
+    status: HotelStatus
 
 
 class HotelPatch(BaseModel):

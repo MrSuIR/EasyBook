@@ -89,7 +89,6 @@ async def _seed_demo() -> None:
 
 @app.command("seed-demo")
 def seed_demo() -> None:
-    """Download and create the idempotent local demo dataset."""
     try:
         asyncio.run(_seed_demo())
     except DemoSeedNotAllowedError as ex:

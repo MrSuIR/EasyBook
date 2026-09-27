@@ -19,11 +19,11 @@ class HotelsOrm(Base):
             "char_length(location) BETWEEN 1 AND 500 AND location ~ '[^[:space:]]'",
             name="ck_hotels_location_valid",
         ),
+        CheckConstraint("status IN ('active', 'archived')", name="ck_hotels_status"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(100))
     location: Mapped[str] = mapped_column(String(500))
-    images: Mapped[list[HotelImagesOrm]] = relationship(
-        back_populates="hotel", passive_deletes=True
-    )
+    status: Mapped[str] = mapped_column(String(20), default="active", server_default="active")
+    images: Mapped[list[HotelImagesOrm]] = relationship(back_populates="hotel", passive_deletes=True)

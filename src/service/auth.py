@@ -21,9 +21,7 @@ class AuthService(BaseService):
 
     def create_access_token(self, user_id: int) -> str:
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        return jwt.encode(
-            {"sub": str(user_id), "exp": expire}, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
-        )
+        return jwt.encode({"sub": str(user_id), "exp": expire}, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
     def hashed_password(self, password: str) -> str:
         return self.pwd_context.hash(password)

@@ -55,7 +55,6 @@ export default function OverviewPanel() {
     <section className="admin-panel">
       <div className="admin-section-heading">
         <div>
-          <p className="eyebrow">Состояние системы</p>
           <h2>Обзор EasyBook</h2>
         </div>
         <button type="button" onClick={load}>

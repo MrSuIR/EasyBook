@@ -12,11 +12,7 @@ import { api } from "../api.js";
 import { localDateKey } from "../dateUtils.js";
 import { formatPrice } from "../utils/formatters.js";
 
-const fallbackImages = [
-  "/images/hero-stay.png",
-  "/images/account-radisson.jpg",
-  "/images/account-metropol.jpg",
-];
+const hotelFallback = "/images/hotel-fallback.jpg";
 
 function useLocationSuggestions(value, setValue) {
   const [items, setItems] = useState([]);
@@ -143,9 +139,7 @@ function SearchBar({ values, setValues, onSubmit, busy }) {
         />
       </label>
       <label className="search-field sort-field">
-        <span>
-          <ChevronDown size={18} /> Сортировка
-        </span>
+        <span>Сортировка</span>
         <select
           value={`${values.sort_by}:${values.sort_order}`}
           onChange={(event) => {
@@ -158,7 +152,7 @@ function SearchBar({ values, setValues, onSubmit, busy }) {
           <option value="title:desc">Название Я–А</option>
           <option value="location:asc">Город А–Я</option>
         </select>
-        <ChevronDown size={16} />
+        <ChevronDown className="sort-chevron" size={16} aria-hidden="true" />
       </label>
       <button className="search-submit" type="submit" disabled={busy}>
         {busy ? <LoaderCircle className="spin" /> : <Search />}
@@ -168,14 +162,14 @@ function SearchBar({ values, setValues, onSubmit, busy }) {
   );
 }
 
-function HotelCard({ hotel, index, featured, dates }) {
-  const fallback = fallbackImages[index % fallbackImages.length];
+function HotelCard({ hotel, featured, dates }) {
+  const fallback = hotelFallback;
   const href = `/hotels/${hotel.id}?date_from=${dates.date_from}&date_to=${dates.date_to}`;
   return (
     <a className={`hotel-card ${featured ? "featured" : ""}`} href={href}>
       <img
         src={hotel.image || fallback}
-        alt={`Фотография отеля ${hotel.title}`}
+        alt={`Фотография для карточки отеля ${hotel.title}`}
         onError={(event) => {
           if (!event.currentTarget.src.endsWith(fallback))
             event.currentTarget.src = fallback;
@@ -222,7 +216,6 @@ function Catalog({ hotels, loading, error, dates }) {
           <HotelCard
             key={hotel.id}
             hotel={hotel}
-            index={index}
             featured={index === 0}
             dates={dates}
           />
@@ -230,11 +223,10 @@ function Catalog({ hotels, loading, error, dates }) {
       </div>
       {remainingHotels.length > 0 && (
         <div className="hotel-row">
-          {remainingHotels.map((hotel, index) => (
+          {remainingHotels.map((hotel) => (
             <HotelCard
               key={hotel.id}
               hotel={hotel}
-              index={index + 5}
               dates={dates}
             />
           ))}
@@ -244,29 +236,21 @@ function Catalog({ hotels, loading, error, dates }) {
   );
 }
 
-function RouteDecoration() {
-  const points = [
-    [532, 405],
-    [1018, 678],
-    [350, 805],
-    [622, 1198],
-  ];
+function HeroBackground() {
   return (
-    <div className="home-backdrop" aria-hidden="true">
-      <span className="home-contour home-contour-top" />
-      <span className="home-contour home-contour-bottom" />
+    <div className="hero-background" aria-hidden="true">
+      <span className="hero-blob hero-blob--right" />
+      <span className="hero-blob hero-blob--middle" />
+      <span className="hero-blob hero-blob--left" />
       <svg
-        className="home-route"
-        viewBox="0 0 1440 1700"
+        className="hero-lines"
+        viewBox="0 0 1440 570"
         preserveAspectRatio="none"
       >
-        <path d="M-80 250C210 115 275 465 532 405C770 350 832 112 1110 212C1358 302 1260 610 1018 678C748 753 520 640 350 805C160 990 310 1212 622 1198C924 1184 985 1398 1510 1320" />
-        <g>
-          {points.flatMap(([cx, cy]) => [
-            <circle key={`${cx}-${cy}-outer`} cx={cx} cy={cy} r="8" />,
-            <circle key={`${cx}-${cy}-inner`} cx={cx} cy={cy} r="3" />,
-          ])}
-        </g>
+        <path d="M-138 410C-18 344 91 398 176 489C218 534 270 566 344 589" />
+        <path d="M1018 -76C1106 28 1240 66 1506 -18" />
+        <path d="M1468 104C1318 180 1288 322 1486 447" />
+        <path d="M615 36C548 92 537 176 593 231C616 254 646 271 681 280" />
       </svg>
     </div>
   );
@@ -286,8 +270,8 @@ export default function HomePage({
   return (
     <>
       <main id="top">
-        <RouteDecoration />
         <section className="hero">
+          <HeroBackground />
           <div className="hero-copy">
             <h1>
               Забудьте о суете.
@@ -307,8 +291,8 @@ export default function HomePage({
             <div className="hero-image-frame">
               <img
                 className="hero-image"
-                src="/images/hero-stay.png"
-                alt="Светлый номер с панорамными окнами и видом на море"
+                src="/images/hero-stay.jpg"
+                alt="Островной курорт с бунгало над водой"
               />
             </div>
           </div>

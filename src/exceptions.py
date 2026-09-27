@@ -78,6 +78,18 @@ class AllRoomsAreBookedException(EasyBookException):
     detail = "На выбранные даты не осталось свободных номеров"
 
 
+class HotelArchivedException(EasyBookException):
+    status_code = 409
+    code = "hotel_archived"
+    detail = "Отель архивирован и не принимает новые бронирования"
+
+
+class RoomQuantityBelowBookingsException(EasyBookException):
+    status_code = 409
+    code = "room_quantity_below_bookings"
+    detail = "Количество номеров меньше числа действующих бронирований"
+
+
 class ReviewAlreadyExistsException(ObjectAlreadyExistException):
     code = "review_already_exists"
     detail = "Для этого бронирования уже существует отзыв"

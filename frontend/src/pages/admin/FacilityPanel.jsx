@@ -1,9 +1,63 @@
 import { useCallback, useEffect, useState } from "react";
-import { BedDouble, Camera, Pencil, Save, Trash2, X } from "lucide-react";
+import {
+  BedDouble,
+  Camera,
+  CarFront,
+  Coffee,
+  ConciergeBell,
+  Dumbbell,
+  PawPrint,
+  Pencil,
+  Plane,
+  Snowflake,
+  Sparkles,
+  Trash2,
+  Tv,
+  UsersRound,
+  Utensils,
+  Waves,
+  Wifi,
+  X,
+} from "lucide-react";
 
 import { api } from "../../api.js";
 import { ErrorMessage, LoadingState } from "./AdminStates.jsx";
 import { confirmDelete } from "./helpers.js";
+
+const facilityIcons = {
+  "wi-fi": Wifi,
+  breakfast: Coffee,
+  parking: CarFront,
+  pool: Waves,
+  spa: Sparkles,
+  "air conditioning": Snowflake,
+  restaurant: Utensils,
+  "fitness center": Dumbbell,
+  "airport transfer": Plane,
+  "pet friendly": PawPrint,
+  "room service": ConciergeBell,
+  "family rooms": UsersRound,
+  телевизор: Tv,
+};
+
+function FacilityIcon({ item }) {
+  const Icon = facilityIcons[item.title.trim().toLowerCase()] || BedDouble;
+  return item.image_url ? (
+    <>
+      <img
+        src={item.image_url}
+        alt=""
+        onError={(event) => {
+          event.currentTarget.hidden = true;
+          event.currentTarget.nextElementSibling.hidden = false;
+        }}
+      />
+      <Icon aria-hidden="true" hidden />
+    </>
+  ) : (
+    <Icon aria-hidden="true" />
+  );
+}
 
 export default function FacilityPanel() {
   const [items, setItems] = useState([]);
@@ -51,7 +105,6 @@ export default function FacilityPanel() {
     <section className="admin-panel">
       <div className="admin-section-heading">
         <div>
-          <p className="eyebrow">Справочник</p>
           <h2>Удобства</h2>
         </div>
       </div>
@@ -67,7 +120,6 @@ export default function FacilityPanel() {
           />
         </label>
         <button type="submit">
-          <Save />
           {editing ? "Сохранить" : "Добавить"}
         </button>
         {editing && (
@@ -90,11 +142,7 @@ export default function FacilityPanel() {
         <div className="facility-admin-grid">
           {items.map((item) => (
             <article key={item.id}>
-              {item.image_url ? (
-                <img src={item.image_url} alt="" />
-              ) : (
-                <BedDouble />
-              )}
+              <FacilityIcon item={item} />
               <div>
                 <strong>{item.title}</strong>
                 <small>№ {item.id}</small>

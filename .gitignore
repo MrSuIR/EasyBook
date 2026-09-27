@@ -14,7 +14,8 @@ CONTEXT.md
 *.py[cod]
 nul
 src/static/images/*
-!src/static/images/.gitkeep
+!src/static/images/demo/
+!src/static/images/demo/**
 frontend/node_modules/
 frontend/dist/
 frontend/.npm-cache/

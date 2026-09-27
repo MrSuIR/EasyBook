@@ -30,6 +30,4 @@ class UsersOrm(Base):
     first_name: Mapped[str] = mapped_column(String(100))
     last_name: Mapped[str] = mapped_column(String(100))
     hashed_password: Mapped[str]
-    role: Mapped[str] = mapped_column(
-        String(20), default=UserRole.CLIENT.value, server_default=UserRole.CLIENT.value
-    )
+    role: Mapped[str] = mapped_column(String(20), default=UserRole.CLIENT.value, server_default=UserRole.CLIENT.value)

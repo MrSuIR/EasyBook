@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
-from pathlib import Path
 from typing import TYPE_CHECKING
 from uuid import NAMESPACE_URL, UUID, uuid5
 
@@ -61,21 +60,12 @@ def _batches(values: list[dict], size: int = 1_500):
 
 
 @dataclass(frozen=True)
-class DemoImageBinding:
-    hotel_id: int
-    source_path: str
-    relative_path: str
-
-
-@dataclass(frozen=True)
 class DemoSeedDatabaseResult:
     hotels: int
     rooms: int
     bookings: int
     reviews: int
     images: int
-    old_image_paths: tuple[str, ...]
-    image_bindings: tuple[DemoImageBinding, ...]
 
 
 class DemoSeedRepository:
@@ -97,7 +87,14 @@ class DemoSeedRepository:
             HotelsOrm.title.like("EasyBook %"),
         )
         hotel_ids = list((await self.session.execute(select(HotelsOrm.id).where(condition))).scalars())
-        old_image_paths: tuple[str, ...] = ()
+        statuses_by_key = {
+            (row.title, row.location): row.status
+            for row in (
+                await self.session.execute(
+                    select(HotelsOrm.title, HotelsOrm.location, HotelsOrm.status).where(condition)
+                )
+            ).all()
+        }
         if hotel_ids:
             room_ids = list(
                 (
@@ -113,13 +110,6 @@ class DemoSeedRepository:
                         )
                     ).scalars()
                 )
-            old_image_paths = tuple(
-                (
-                    await self.session.execute(
-                        select(HotelImagesOrm.original_path).where(HotelImagesOrm.hotel_id.in_(hotel_ids))
-                    )
-                ).scalars()
-            )
             if booking_ids:
                 await self.session.execute(delete(ReviewsOrm).where(ReviewsOrm.booking_id.in_(booking_ids)))
                 await self.session.execute(delete(BookingsOrm).where(BookingsOrm.id.in_(booking_ids)))
@@ -136,7 +126,16 @@ class DemoSeedRepository:
         hotel_rows = (
             await self.session.execute(
                 insert(HotelsOrm)
-                .values([{"title": item.title, "location": item.location} for item in catalog])
+                .values(
+                    [
+                        {
+                            "title": item.title,
+                            "location": item.location,
+                            "status": statuses_by_key.get((item.title, item.location), "active"),
+                        }
+                        for item in catalog
+                    ]
+                )
                 .returning(HotelsOrm.id, HotelsOrm.title, HotelsOrm.location)
             )
         ).all()
@@ -250,21 +249,13 @@ class DemoSeedRepository:
             await self.session.execute(insert(ReviewsOrm).values(batch))
 
         image_values = []
-        image_bindings = []
         for hotel in catalog:
             if not hotel.image_path:
                 continue
             hotel_id = hotel_ids_by_key[(hotel.title, hotel.location)]
-            extension = Path(hotel.image_path).suffix.lower()
             image_id: UUID = uuid5(NAMESPACE_URL, f"easybook-demo:{hotel.location}:{hotel.title}")
-            relative_path = Path("hotels") / str(hotel_id) / f"{image_id}{extension}"
             image_values.append(
-                {"id": image_id, "hotel_id": hotel_id, "original_path": relative_path.as_posix()}
-            )
-            image_bindings.append(
-                DemoImageBinding(
-                    hotel_id=hotel_id, source_path=hotel.image_path, relative_path=relative_path.as_posix()
-                )
+                {"id": image_id, "hotel_id": hotel_id, "original_path": hotel.image_path}
             )
         for batch in _batches(image_values):
             await self.session.execute(insert(HotelImagesOrm).values(batch))
@@ -274,8 +265,6 @@ class DemoSeedRepository:
             bookings=len(booking_rows),
             reviews=len(review_values),
             images=len(image_values),
-            old_image_paths=old_image_paths,
-            image_bindings=tuple(image_bindings),
         )
 
     async def _reset_catalog_identity_sequences(self) -> None:

@@ -3,31 +3,42 @@ import { X } from "lucide-react";
 
 import { api } from "../../api.js";
 import { ErrorMessage, LoadingState } from "./AdminStates.jsx";
-import { confirmDelete, loadAllPages } from "./helpers.js";
+import { confirmDelete } from "./helpers.js";
+import Pagination from "./Pagination.jsx";
+
+const PER_PAGE = 20;
 
 export default function BookingPanel() {
   const [items, setItems] = useState([]);
   const [sort, setSort] = useState("id:asc");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const load = useCallback(async () => {
+  const load = useCallback(async (signal) => {
     setLoading(true);
     const [sort_by, sort_order] = sort.split(":");
     try {
-      const result = await loadAllPages((page) =>
-        api.bookings.list({ page, per_page: 100, sort_by, sort_order }),
+      const result = await api.bookings.list(
+        { page, per_page: PER_PAGE, sort_by, sort_order },
+        { signal },
       );
       setItems(result.items);
+      setTotal(result.total);
       setError("");
     } catch (exception) {
-      setError(exception.message);
+      if (exception.name !== "AbortError") setError(exception.message);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  }, [sort]);
+  }, [page, sort]);
   useEffect(() => {
-    const request = window.requestAnimationFrame(load);
-    return () => window.cancelAnimationFrame(request);
+    const controller = new AbortController();
+    const request = window.requestAnimationFrame(() => load(controller.signal));
+    return () => {
+      window.cancelAnimationFrame(request);
+      controller.abort();
+    };
   }, [load]);
   const cancel = (item) =>
     confirmDelete(`Отменить бронирование № ${item.id}?`, async () => {
@@ -42,10 +53,15 @@ export default function BookingPanel() {
     <section className="admin-panel">
       <div className="admin-section-heading">
         <div>
-          <p className="eyebrow">Операции</p>
           <h2>Бронирования</h2>
         </div>
-        <select value={sort} onChange={(event) => setSort(event.target.value)}>
+        <select
+          value={sort}
+          onChange={(event) => {
+            setPage(1);
+            setSort(event.target.value);
+          }}
+        >
           <option value="id:asc">Сначала старые</option>
           <option value="id:desc">Сначала новые</option>
           <option value="date_from:asc">По дате заезда</option>
@@ -101,6 +117,7 @@ export default function BookingPanel() {
           </table>
         </div>
       )}
+      {!loading && <Pagination page={page} perPage={PER_PAGE} total={total} onPageChange={setPage} />}
     </section>
   );
 }

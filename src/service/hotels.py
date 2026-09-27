@@ -1,8 +1,9 @@
 from datetime import date
 
 from src.exceptions import ObjectNotFoundException, HotelNotFoundException
+from src.constants import HotelStatus
 from src.schemas.common import SortOrder
-from src.schemas.hotels import HotelAdd, HotelPatch, HotelSortBy
+from src.schemas.hotels import HotelAdd, HotelPatch, HotelSortBy, HotelStatusUpdate
 from src.service.base import BaseService
 from src.service.image_storage import remove_image_file
 
@@ -47,6 +48,7 @@ class HotelService(BaseService):
         per_page: int,
         title: str | None = None,
         location: str | None = None,
+        status: HotelStatus | None = None,
         sort_by: HotelSortBy | None = None,
         sort_order: SortOrder | None = None,
     ):
@@ -55,6 +57,7 @@ class HotelService(BaseService):
             offset=per_page * (page - 1),
             title=title,
             location=location,
+            status=status,
             sort_by=sort_by or HotelSortBy.ID,
             sort_order=sort_order or SortOrder.ASC,
         )
@@ -83,6 +86,15 @@ class HotelService(BaseService):
         await self.db.commit()
         for image in images:
             await remove_image_file(image.original_path)
+
+    async def set_status(self, hotel_id: int, data: HotelStatusUpdate):
+        try:
+            await self.db.hotels.get_for_update(hotel_id)
+            hotel = await self.db.hotels.edit(id=hotel_id, data=data, exclude_unset=True)
+        except ObjectNotFoundException as ex:
+            raise HotelNotFoundException from ex
+        await self.db.commit()
+        return hotel
 
     async def check_hotel_exist(self, hotel_id: int):
         try:

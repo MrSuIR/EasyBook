@@ -1,0 +1,511 @@
+.admin-hotel-layout {
+  grid-template-columns: minmax(270px, 300px) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.admin-hotel-catalog {
+  align-self: start;
+  position: sticky;
+  top: 18px;
+  border-radius: 13px;
+}
+
+.admin-hotel-catalog-heading {
+  padding: 16px 14px 12px;
+  gap: 12px;
+}
+
+.admin-hotel-catalog-heading h3 {
+  font-size: 17px;
+  letter-spacing: -0.025em;
+}
+
+.admin-hotel-search {
+  position: relative;
+  display: block;
+}
+
+.admin-hotel-search > svg {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 17px;
+  height: 17px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.admin-hotel-catalog-heading .admin-hotel-search input {
+  padding-left: 38px;
+  background: var(--surface);
+}
+
+.admin-hotel-status-filter {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.admin-hotel-status {
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #e7f5ea;
+  color: #18703b;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.admin-hotel-status.archived {
+  background: #eef0f3;
+  color: #687281;
+}
+
+:root[data-theme="dark"] .admin-hotel-status.active {
+  background: #193c2c;
+  color: #8fe0a9;
+}
+
+:root[data-theme="dark"] .admin-hotel-status.archived {
+  background: #2b3543;
+  color: #b3bdcb;
+}
+
+.admin-hotel-catalog .admin-list {
+  max-height: calc(100dvh - 270px);
+  padding: 6px;
+  gap: 2px;
+}
+
+.admin-hotel-catalog .admin-list article {
+  border-radius: 9px;
+}
+
+.admin-hotel-catalog .admin-list article.selected {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 16%, transparent);
+}
+
+.admin-hotel-catalog .admin-list-main {
+  min-width: 0;
+  padding: 6px;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-hotel-thumbnail {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 7px;
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.admin-hotel-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-hotel-thumbnail > svg {
+  width: 22px;
+  height: 22px;
+}
+
+.admin-list-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.admin-list-copy strong {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 750;
+}
+
+.admin-list-copy small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-hotel-summary {
+  min-width: 0;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: minmax(210px, 34%) minmax(0, 1fr);
+  gap: 20px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface);
+}
+
+.admin-hotel-cover {
+  position: relative;
+  height: 196px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--blue-soft);
+}
+
+.admin-hotel-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-hotel-illustration {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 5px 7px;
+  border-radius: 5px;
+  background: rgba(17, 27, 45, 0.75);
+  color: white;
+  font-size: 10px;
+}
+
+.admin-hotel-summary-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.admin-hotel-summary h3 {
+  margin: 2px 0 10px;
+  font-size: clamp(21px, 2.2vw, 28px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.admin-hotel-location {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.admin-hotel-location svg {
+  width: 15px;
+  height: 15px;
+}
+
+.admin-hotel-location span,
+.admin-room-title-line span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-hotel-summary .admin-detail-actions {
+  width: 100%;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.admin-hotel-summary .admin-detail-actions > button,
+.admin-hotel-summary .admin-upload {
+  min-height: 39px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-hotel-summary .admin-detail-actions > .primary {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+
+.admin-hotel-summary .admin-detail-actions > .danger,
+.admin-room-card-actions .danger {
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--line));
+  color: var(--danger);
+}
+
+.admin-hotel-summary .admin-upload:focus-within {
+  outline: 3px solid color-mix(in srgb, var(--blue) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.admin-hotel-gallery {
+  margin: 9px 0 14px;
+}
+
+.admin-hotel-gallery summary {
+  width: fit-content;
+  padding: 5px 2px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.admin-hotel-gallery summary svg {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-hotel-gallery .admin-image-strip {
+  margin: 10px 0 16px;
+}
+
+.admin-hotel-gallery .admin-image-strip figure {
+  border: 1px solid var(--line);
+}
+
+.admin-room-heading {
+  margin: 16px 0 12px;
+}
+
+.admin-room-heading h4 {
+  font-size: 23px;
+  letter-spacing: -0.035em;
+}
+
+.admin-room-heading button {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: white;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.admin-room-grid {
+  grid-template-columns: 1fr;
+}
+
+.admin-room-grid .admin-room-card {
+  min-width: 0;
+  padding: 12px;
+  grid-template-columns: 120px minmax(0, 1fr) 120px 82px;
+  align-items: start;
+  gap: 14px;
+  border-radius: 12px;
+}
+
+.admin-room-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.admin-room-copy {
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-room-title-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-room-title-line h5 {
+  margin: 2px 0;
+  font-size: 18.4px;
+  letter-spacing: -0.02em;
+}
+
+.admin-room-copy > p {
+  margin: 4px 0 8px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: var(--muted);
+  font-size: 12.65px;
+  line-height: 1.38;
+}
+
+.admin-room-facilities {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.admin-room-facilities > span {
+  min-height: 23px;
+  padding: 2px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.admin-room-facilities img,
+.admin-room-facilities svg {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+}
+
+.admin-room-card .admin-room-meta {
+  min-height: 116px;
+  padding: 8px 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 13px;
+  border-top: 0;
+  border-left: 1px solid var(--line);
+}
+
+.admin-room-card .admin-room-meta strong {
+  color: var(--ink);
+  font-size: 20.7px;
+  white-space: nowrap;
+}
+
+.admin-room-card .admin-room-meta small {
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.admin-room-card .admin-room-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.65px;
+  white-space: nowrap;
+}
+
+.admin-room-card .admin-room-title-line span {
+  font-size: 12.65px;
+}
+
+.admin-room-meta svg {
+  width: 15px;
+  height: 15px;
+}
+
+.admin-room-card .admin-room-card-actions {
+  padding-top: 5px;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.admin-room-card-actions button {
+  width: 35px;
+  height: 35px;
+}
+
+.admin-hotel-catalog button:focus-visible,
+.admin-hotel-gallery summary:focus-visible,
+.admin-room-card button:focus-visible,
+.admin-room-heading button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--blue) 35%, transparent);
+  outline-offset: 2px;
+}
+
+@container hotel-workspace (max-width: 780px) {
+  .admin-room-grid .admin-room-card {
+    grid-template-columns: 105px minmax(0, 1fr) 112px;
+  }
+  .admin-room-photo {
+    width: 105px;
+    height: 112px;
+  }
+  .admin-room-card .admin-room-card-actions {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+    justify-content: flex-start;
+    padding-left: 14px;
+  }
+  .admin-room-card .admin-room-meta {
+    min-height: 112px;
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+@container hotel-workspace (max-width: 520px) {
+  .admin-hotel-summary {
+    grid-template-columns: 1fr;
+  }
+  .admin-hotel-cover {
+    height: 210px;
+  }
+  .admin-room-grid .admin-room-card {
+    grid-template-columns: 100px minmax(0, 1fr);
+  }
+  .admin-room-photo {
+    width: 100px;
+    height: 112px;
+  }
+  .admin-room-card .admin-room-meta {
+    min-height: auto;
+    grid-column: 2;
+    grid-row: auto;
+    padding: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border: 0;
+  }
+  .admin-room-card .admin-room-card-actions {
+    grid-column: 2;
+    grid-row: auto;
+    padding: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-hotel-layout {
+    grid-template-columns: 1fr;
+  }
+  .admin-hotel-catalog {
+    position: static;
+  }
+  .admin-hotel-catalog .admin-list {
+    max-height: 280px;
+  }
+}

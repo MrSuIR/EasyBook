@@ -19,7 +19,7 @@ class BaseRepository:
         result = await self.session.execute(query)
         return [self.mapper.map_to_domain_entity(model) for model in result.scalars().all()]
 
-    async def get_all(self, *args, **kwargs):
+    async def get_all(self):
         return await self.get_filtered()
 
     async def count(self, *filters, **filter_by) -> int:
@@ -33,14 +33,6 @@ class BaseRepository:
             model = result.scalars().one()
         except NoResultFound:
             raise ObjectNotFoundException
-        return self.mapper.map_to_domain_entity(model)
-
-    async def get_one_or_none(self, **filter_by):
-        query = select(self.model).filter_by(**filter_by)
-        result = await self.session.execute(query)
-        model = result.scalars().one_or_none()
-        if model is None:
-            return None
         return self.mapper.map_to_domain_entity(model)
 
     async def add(self, data: BaseModel):

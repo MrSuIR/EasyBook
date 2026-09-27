@@ -13,13 +13,14 @@ from src.service.demo_seed import DEMO_PASSWORD, DemoSeedNotAllowedError, DemoSe
 from src.repositories.demo_seed import ROOM_SPECS
 from src.schemas.analytics import HotelAnalyticsSortBy
 from src.schemas.common import SortOrder
+from src.schemas.hotels import HotelAdd
 from src.utils.db_manager import DBManager
 
 
 class FakeCatalogProvider:
-    def __init__(self, cache_dir: Path):
-        self.cache_dir = cache_dir
-        asset = cache_dir / "assets" / "hotel.jpg"
+    def __init__(self, image_dir: Path):
+        self.image_dir = image_dir
+        asset = image_dir / "assets" / "hotel.jpg"
         asset.parent.mkdir(parents=True)
         Image.new("RGB", (32, 24), "navy").save(asset, format="JPEG")
 
@@ -43,7 +44,10 @@ class FakeCatalogProvider:
 async def test_demo_seed_is_idempotent_and_creates_global_catalog(clean_database, tmp_path, monkeypatch):
     image_dir = tmp_path / "images"
     monkeypatch.setattr(settings, "IMAGE_DIR", image_dir)
-    provider = FakeCatalogProvider(tmp_path / "cache")
+    provider = FakeCatalogProvider(image_dir)
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+        await db.hotels.add(HotelAdd(title="Hotel1", location="Location1"))
+        await db.commit()
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         first = await DemoSeedService(db, provider).seed(today=date.today())
         first_ids = {
@@ -93,6 +97,7 @@ async def test_demo_seed_is_idempotent_and_creates_global_catalog(clean_database
         assert await db.bookings.count() == first.bookings
         assert await db.reviews.count() == first.reviews
         assert await db.images.count() == first.images
+        assert not await db.hotels.get_filtered(title="Hotel1")
 
         demo_descriptions = {description for _, description, _, _ in ROOM_SPECS}
         rooms = await db.rooms.get_all()

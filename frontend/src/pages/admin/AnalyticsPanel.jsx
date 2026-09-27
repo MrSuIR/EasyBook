@@ -3,7 +3,9 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "../../api.js";
 import { addLocalDays, localDateKey } from "../../dateUtils.js";
 import { ErrorMessage, LoadingState } from "./AdminStates.jsx";
-import { loadAllPages } from "./helpers.js";
+import Pagination from "./Pagination.jsx";
+
+const PER_PAGE = 20;
 
 export default function AnalyticsPanel() {
   const defaults = {
@@ -14,31 +16,42 @@ export default function AnalyticsPanel() {
   };
   const [filters, setFilters] = useState(defaults);
   const [items, setItems] = useState([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const load = useCallback(async () => {
+  const updateFilter = (key, value) => {
+    setPage(1);
+    setFilters((current) => ({ ...current, [key]: value }));
+  };
+  const load = useCallback(async (signal) => {
     setLoading(true);
     try {
-      const result = await loadAllPages((page) =>
-        api.analytics.hotels({ page, per_page: 100, ...filters }),
+      const result = await api.analytics.hotels(
+        { page, per_page: PER_PAGE, ...filters },
+        { signal },
       );
       setItems(result.items);
+      setTotal(result.total);
       setError("");
     } catch (exception) {
-      setError(exception.message);
+      if (exception.name !== "AbortError") setError(exception.message);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  }, [filters]);
+  }, [filters, page]);
   useEffect(() => {
-    const request = window.requestAnimationFrame(load);
-    return () => window.cancelAnimationFrame(request);
+    const controller = new AbortController();
+    const request = window.requestAnimationFrame(() => load(controller.signal));
+    return () => {
+      window.cancelAnimationFrame(request);
+      controller.abort();
+    };
   }, [load]);
   return (
     <section className="admin-panel">
       <div className="admin-section-heading">
         <div>
-          <p className="eyebrow">Отчёт</p>
           <h2>Аналитика по отелям</h2>
         </div>
       </div>
@@ -48,9 +61,7 @@ export default function AnalyticsPanel() {
           <input
             type="date"
             value={filters.date_from}
-            onChange={(event) =>
-              setFilters({ ...filters, date_from: event.target.value })
-            }
+            onChange={(event) => updateFilter("date_from", event.target.value)}
           />
         </label>
         <label>
@@ -58,18 +69,14 @@ export default function AnalyticsPanel() {
           <input
             type="date"
             value={filters.date_to}
-            onChange={(event) =>
-              setFilters({ ...filters, date_to: event.target.value })
-            }
+            onChange={(event) => updateFilter("date_to", event.target.value)}
           />
         </label>
         <label>
           Показатель
           <select
             value={filters.sort_by}
-            onChange={(event) =>
-              setFilters({ ...filters, sort_by: event.target.value })
-            }
+            onChange={(event) => updateFilter("sort_by", event.target.value)}
           >
             <option value="booked_revenue">Выручка</option>
             <option value="confirmed_bookings">Подтверждения</option>
@@ -82,9 +89,7 @@ export default function AnalyticsPanel() {
           Порядок
           <select
             value={filters.sort_order}
-            onChange={(event) =>
-              setFilters({ ...filters, sort_order: event.target.value })
-            }
+            onChange={(event) => updateFilter("sort_order", event.target.value)}
           >
             <option value="desc">По убыванию</option>
             <option value="asc">По возрастанию</option>
@@ -130,6 +135,7 @@ export default function AnalyticsPanel() {
           </table>
         </div>
       )}
+      {!loading && <Pagination page={page} perPage={PER_PAGE} total={total} onPageChange={setPage} />}
     </section>
   );
 }

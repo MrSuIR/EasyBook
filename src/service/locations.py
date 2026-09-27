@@ -11,9 +11,7 @@ GEOAPIFY_AUTOCOMPLETE_URL = "https://api.geoapify.com/v1/geocode/autocomplete"
 class LocationService:
     async def suggest(self, query: str, limit: int) -> list[LocationSuggestion]:
         if not settings.GEOAPIFY_API_KEY:
-            raise LocationProviderUnavailableException(
-                "Глобальные подсказки не настроены: задайте GEOAPIFY_API_KEY"
-            )
+            raise LocationProviderUnavailableException("Глобальные подсказки не настроены: задайте GEOAPIFY_API_KEY")
 
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(5.0, connect=2.0)) as client:
@@ -42,7 +40,5 @@ class LocationService:
             if not city or not country or key in seen:
                 continue
             seen.add(key)
-            suggestions.append(
-                LocationSuggestion(city=city, country=country, label=f"{city}, {country}")
-            )
+            suggestions.append(LocationSuggestion(city=city, country=country, label=f"{city}, {country}"))
         return suggestions

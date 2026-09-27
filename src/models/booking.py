@@ -1,4 +1,3 @@
-from sqlalchemy.ext.hybrid import hybrid_property
 from src.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, func
@@ -31,11 +30,5 @@ class BookingsOrm(Base):
         default=BookingStatus.CONFIRMED.value,
         server_default=BookingStatus.CONFIRMED.value,
     )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-
-    @hybrid_property
-    def total_cost(self) -> int:
-        return self.price * (self.date_to - self.date_from).days

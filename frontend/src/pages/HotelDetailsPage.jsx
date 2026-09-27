@@ -2,21 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
+  CarFront,
+  Coffee,
+  ConciergeBell,
+  Dumbbell,
   LoaderCircle,
   MapPin,
+  PawPrint,
+  Plane,
+  Snowflake,
   Sparkles,
   Star,
+  UsersRound,
+  Utensils,
+  Waves,
+  Wifi,
 } from "lucide-react";
 
 import { api } from "../api.js";
 import { localDateKey } from "../dateUtils.js";
 import { formatPrice, normalizeImageUrl } from "../utils/formatters.js";
 
-const fallbackImages = [
-  "/images/hero-stay.png",
-  "/images/account-radisson.jpg",
-  "/images/account-metropol.jpg",
-];
+const hotelFallback = "/images/hotel-fallback.jpg";
 
 function nightsBetween(dateFrom, dateTo) {
   return Math.max(
@@ -28,18 +35,38 @@ function nightsBetween(dateFrom, dateTo) {
   );
 }
 
+const facilityIcons = {
+  "wi-fi": Wifi,
+  breakfast: Coffee,
+  parking: CarFront,
+  pool: Waves,
+  spa: Sparkles,
+  "air conditioning": Snowflake,
+  restaurant: Utensils,
+  "fitness center": Dumbbell,
+  "airport transfer": Plane,
+  "pet friendly": PawPrint,
+  "room service": ConciergeBell,
+  "family rooms": UsersRound,
+};
+
 function FacilityIcon({ facility }) {
   const source = facility.image_url;
-  if (!source) return <Sparkles aria-hidden="true" />;
+  const FallbackIcon = facilityIcons[facility.title.toLowerCase()] || Sparkles;
+  if (!source) return <FallbackIcon aria-hidden="true" />;
   return (
-    <img
-      src={source}
-      alt=""
-      aria-hidden="true"
-      onError={(event) => {
-        event.currentTarget.hidden = true;
-      }}
-    />
+    <>
+      <img
+        src={source}
+        alt=""
+        aria-hidden="true"
+        onError={(event) => {
+          event.currentTarget.hidden = true;
+          event.currentTarget.nextElementSibling.hidden = false;
+        }}
+      />
+      <FallbackIcon aria-hidden="true" hidden />
+    </>
   );
 }
 
@@ -139,26 +166,23 @@ export default function HotelDetailsPage({
   const total = selectedRoom ? selectedRoom.price * nights : 0;
   const gallery = useMemo(() => {
     const realImages = images.map(normalizeImageUrl).filter(Boolean);
-    const offset = Math.max(0, (Number(hotelId) - 1) % fallbackImages.length);
-    const fallbacks = [
-      ...fallbackImages.slice(offset),
-      ...fallbackImages.slice(0, offset),
-    ];
-    return [
-      ...realImages,
-      ...fallbacks.filter((source) => !realImages.includes(source)),
-    ].slice(0, 3);
-  }, [hotelId, images]);
+    return realImages.length ? realImages.slice(0, 3) : [hotelFallback];
+  }, [images]);
 
-  const refreshAvailability = (event) => {
-    event.preventDefault();
-    setError("");
-    if (dates.date_to <= dates.date_from) {
+  const updateDates = (field, value) => {
+    const nextDates = { ...dates, [field]: value };
+    setDates(nextDates);
+    if (!nextDates.date_from || !nextDates.date_to || nextDates.date_to <= nextDates.date_from) {
       setError("Дата выезда должна быть позже даты заезда.");
       return;
     }
+    setError("");
+    if (
+      nextDates.date_from === activeDates.date_from &&
+      nextDates.date_to === activeDates.date_to
+    ) return;
     setLoading(true);
-    setActiveDates({ ...dates });
+    setActiveDates(nextDates);
   };
 
   const openBooking = () => {
@@ -224,21 +248,21 @@ export default function HotelDetailsPage({
           className="hotel-gallery"
           aria-label={`Фотографии ${hotel.title}`}
         >
-          <img
-            className="hotel-gallery-main"
-            src={gallery[0]}
-            alt={`${hotel.title}, общий вид`}
-          />
-          <img src={gallery[1]} alt={`${hotel.title}, интерьер`} />
-          <img src={gallery[2]} alt={`${hotel.title}, детали номера`} />
+          {gallery.map((source, index) => (
+            <img
+              key={source}
+              className={index === 0 ? "hotel-gallery-main" : undefined}
+              src={source}
+              alt={index === 0 ? `Фотография для отеля ${hotel.title}` : `Дополнительная фотография ${index + 1}`}
+            />
+          ))}
         </section>
 
         <section className="hotel-information-grid">
           <div className="hotel-about">
             <h2>О выбранном номере</h2>
             <p className="hotel-room-description">
-              {hotel.description ||
-                selectedRoom?.description ||
+              {selectedRoom?.description ||
                 "На выбранные даты свободных номеров нет. Измените период проживания."}
             </p>
             {selectedRoom && (
@@ -264,9 +288,13 @@ export default function HotelDetailsPage({
                   <span>за ночь</span>
                 </p>
               ) : (
-                <p className="booking-unavailable">Нет доступных номеров</p>
+                <p className="booking-unavailable">
+                  {hotel.status === "archived"
+                    ? "Отель архивирован и не принимает новые бронирования"
+                    : "Нет доступных номеров"}
+                </p>
               )}
-              <form className="booking-dates" onSubmit={refreshAvailability}>
+              <div className="booking-dates">
                 <label>
                   <span>
                     <CalendarDays />
@@ -276,9 +304,7 @@ export default function HotelDetailsPage({
                     type="date"
                     value={dates.date_from}
                     min={localDateKey()}
-                    onChange={(event) =>
-                      setDates({ ...dates, date_from: event.target.value })
-                    }
+                    onChange={(event) => updateDates("date_from", event.target.value)}
                   />
                 </label>
                 <label>
@@ -290,13 +316,10 @@ export default function HotelDetailsPage({
                     type="date"
                     value={dates.date_to}
                     min={dates.date_from}
-                    onChange={(event) =>
-                      setDates({ ...dates, date_to: event.target.value })
-                    }
+                    onChange={(event) => updateDates("date_to", event.target.value)}
                   />
                 </label>
-                <button type="submit">Проверить даты</button>
-              </form>
+              </div>
               {selectedRoom && (
                 <div className="booking-total">
                   <span>
@@ -314,7 +337,13 @@ export default function HotelDetailsPage({
               <button
                 className="booking-submit"
                 type="button"
-                disabled={!selectedRoom}
+                disabled={
+                  !selectedRoom ||
+                  hotel.status === "archived" ||
+                  loading ||
+                  dates.date_from !== activeDates.date_from ||
+                  dates.date_to !== activeDates.date_to
+                }
                 onClick={openBooking}
               >
                 {user ? (
@@ -365,7 +394,9 @@ export default function HotelDetailsPage({
             </div>
           ) : (
             <div className="hotel-empty-state">
-              Свободных номеров на этот период нет.
+              {hotel.status === "archived"
+                ? "Отель архивирован и не принимает новые бронирования."
+                : "Свободных номеров на этот период нет."}
             </div>
           )}
         </section>

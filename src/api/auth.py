@@ -2,7 +2,6 @@ from fastapi import APIRouter, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from src.api.dependencies import CurrentUserDep, DBDep, set_auth_cookie
-from src.config import settings
 from src.schemas.users import User, UserLogin, UserProfileUpdate, UserRequestAdd
 from src.service.auth import AuthService
 from src.service.users import UserService
@@ -36,5 +35,5 @@ async def edit_me(data: UserProfileUpdate, db: DBDep, user: CurrentUserDep):
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie(key="access_token", httponly=True, secure=settings.cookie_secure, samesite="lax")
+    response.delete_cookie(key="access_token", httponly=True, secure=True, samesite="lax")
     return {"status": "OK"}

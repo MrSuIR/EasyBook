@@ -1,5 +1,6 @@
 from datetime import date
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
+from src.constants import HotelStatus
 from src.models import HotelsOrm, RoomsOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import HotelDataMapper
@@ -29,8 +30,11 @@ class HotelsRepository(BaseRepository):
         sort_order: SortOrder,
         title: str | None = None,
         location: str | None = None,
+        status: HotelStatus | None = None,
     ):
         query = select(HotelsOrm)
+        if status is not None:
+            query = query.where(HotelsOrm.status == status.value)
         if title:
             query = query.where(HotelsOrm.title.ilike(f"%{title}%"))
         if location:
@@ -64,9 +68,18 @@ class HotelsRepository(BaseRepository):
         rooms_ids_to_get = rooms_ids_for_booking(date_from, date_to)
         hotels_ids = select(RoomsOrm.hotel_id).where(RoomsOrm.id.in_(rooms_ids_to_get))
 
-        query = select(HotelsOrm).filter(HotelsOrm.id.in_(hotels_ids))
+        query = select(HotelsOrm).filter(
+            HotelsOrm.id.in_(hotels_ids), HotelsOrm.status == HotelStatus.ACTIVE.value
+        )
         if location:
-            query = query.filter(HotelsOrm.location.ilike(f"%{location}%"))
+            city, separator, _ = location.partition(",")
+            full_location_match = HotelsOrm.location.ilike(f"%{location}%")
+            if separator and city.strip():
+                query = query.filter(
+                    or_(full_location_match, HotelsOrm.location.ilike(city.strip()))
+                )
+            else:
+                query = query.filter(full_location_match)
         if title:
             query = query.filter(HotelsOrm.title.ilike(f"%{title}%"))
         total = (await self.session.execute(select(func.count()).select_from(query.subquery()))).scalar_one()

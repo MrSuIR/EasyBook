@@ -1,0 +1,37 @@
+[
+  {
+    "file": "hero-stay.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Adaaran_Club_Rannalhi.jpg",
+    "author": "Adaaran Club Rannalhi",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+  },
+  {
+    "file": "hotel-fallback.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Exterior_facade_of_Residence_Bassac_at_blue_hour,_town_of_Champasak,_Laos.jpg",
+    "author": "Basile Morin",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  {
+    "file": "room-standard.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:EXECUTIVE_ROOM_-_Teraskita_Hotel_Makassar.jpg",
+    "author": "Allvin Garamar",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  {
+    "file": "room-comfort.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Puerto_Vallarta,_Mexico_(February_2024)_-_001.jpg",
+    "author": "Another Believer",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  {
+    "file": "room-suite.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Caravelle_Saigon_-_Signature_Studio_Room.jpg",
+    "author": "BaonguyenCaravelas",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+  }
+]

@@ -20,9 +20,7 @@ async def upload_image(hotel_id: int, file: UploadFile, db: DBDep, _: AdminUserD
     return await ImageService(db).upload_image(hotel_id, file)
 
 
-@router.put(
-    "/{hotel_id}/images/{image_id}", response_model=HotelImageResponse
-)
+@router.put("/{hotel_id}/images/{image_id}", response_model=HotelImageResponse)
 async def replace_image(
     hotel_id: int,
     image_id: UUID,

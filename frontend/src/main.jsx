@@ -9,6 +9,8 @@ import "./styles/auth.css";
 import "./styles/booking.css";
 import "./styles/themes.css";
 import "./styles/admin.css";
+import "./styles/admin-hotel.css";
+import "./styles/backgrounds.css";
 
 initializeTheme();
 createRoot(document.getElementById("root")).render(

@@ -63,6 +63,6 @@ def set_auth_cookie(response, token: str):
         value=token,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         httponly=True,
-        secure=settings.cookie_secure,
+        secure=True,
         samesite="lax",
     )

@@ -50,15 +50,16 @@ export default function ThemeToggle({ className = "" }) {
     <button
       className={`theme-toggle${className ? ` ${className}` : ""}`}
       type="button"
-      aria-label={`Включить ${nextThemeLabel} тему`}
+      role="switch"
+      aria-checked={isDark}
+      aria-label="Тёмная тема"
       title={`Включить ${nextThemeLabel} тему`}
       onClick={toggleTheme}
     >
-      <span className="theme-toggle-icon" aria-hidden="true">
-        {isDark ? <Moon /> : <Sun />}
-      </span>
-      <span className="theme-toggle-label">
-        {isDark ? "Тёмная" : "Светлая"}
+      <span className="theme-toggle-track" aria-hidden="true">
+        <Sun className="theme-toggle-sun" />
+        <Moon className="theme-toggle-moon" />
+        <span className="theme-toggle-thumb" />
       </span>
     </button>
   );
