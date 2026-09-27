@@ -14,6 +14,7 @@ from src.service.demo_catalog import (
     LEGACY_PLACEHOLDER_HOTEL_TITLES,
     DemoCatalogProvider,
     DemoHotelSource,
+    demo_hotel_gallery,
 )
 
 
@@ -185,14 +186,15 @@ class DemoSeedService(BaseService):
             {
                 "hotel": hotel.title,
                 "location": hotel.location,
-                "image_url": f"/static/images/{hotel.image_path}",
-                "source_url": hotel.image_source_url,
-                "source_page": hotel.image_page_url,
-                "author": hotel.image_author,
-                "license": hotel.image_license,
-                "license_url": hotel.image_license_url,
+                "image_url": f"/static/images/{photo.image_path}",
+                "source_url": photo.image_source_url,
+                "source_page": photo.image_page_url,
+                "author": photo.image_author,
+                "license": photo.image_license,
+                "license_url": photo.image_license_url,
             }
             for hotel in catalog
+            for photo in demo_hotel_gallery(catalog, hotel)
         ]
         attribution_path.write_text(
             json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8"

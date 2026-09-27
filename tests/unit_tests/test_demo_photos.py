@@ -1,7 +1,7 @@
 import asyncio
 from PIL import Image
 
-from src.service.demo_catalog import DemoCatalogProvider, demo_hotels_count
+from src.service.demo_catalog import DemoCatalogProvider, demo_hotel_gallery, demo_hotels_count
 from src.service.demo_photos import IMAGE_DIR
 
 
@@ -12,6 +12,11 @@ def test_builtin_catalog_has_distinct_credited_photographs():
 
     assert len(catalog) == demo_hotels_count()
     assert len({hotel.image_path for hotel in catalog}) == len(catalog)
+    for hotel in catalog:
+        gallery = demo_hotel_gallery(catalog, hotel)
+        assert len({photo.image_path for photo in gallery}) == 3
+        assert gallery[0] == hotel
+        assert all(photo.location == hotel.location for photo in gallery)
     for hotel in catalog:
         path = IMAGE_DIR / hotel.image_path
         assert path.is_file()

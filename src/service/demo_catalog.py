@@ -26,6 +26,22 @@ class DemoHotelSource:
     image_license_url: str = ""
 
 
+def demo_hotel_gallery(
+    catalog: tuple[DemoHotelSource, ...], hotel: DemoHotelSource
+) -> tuple[DemoHotelSource, ...]:
+    """Use nearby catalog photos for a three-photo demo gallery without copying files."""
+    local_hotels = tuple(item for item in catalog if item.location == hotel.location)
+    start = local_hotels.index(hotel)
+    gallery = []
+    for offset in range(len(local_hotels)):
+        candidate = local_hotels[(start + offset) % len(local_hotels)]
+        if candidate.image_path and candidate.image_path not in {item.image_path for item in gallery}:
+            gallery.append(candidate)
+        if len(gallery) == 3:
+            break
+    return tuple(gallery)
+
+
 DEMO_DESTINATIONS = (
     DemoDestination("Москва", "Россия", 30),
     DemoDestination("Санкт-Петербург", "Россия", 24),
