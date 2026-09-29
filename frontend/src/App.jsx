@@ -156,13 +156,11 @@ export default function App() {
     return undefined;
   }, [authReady, path, user]);
 
-  const search = (event) => {
-    event.preventDefault();
-    if (searchValues.date_to <= searchValues.date_from) {
+  const submitSearch = (nextQuery) => {
+    if (nextQuery.date_to <= nextQuery.date_from) {
       setError("Дата выезда должна быть позже даты заезда.");
       return;
     }
-    const nextQuery = { ...searchValues };
     const params = new URLSearchParams(
       Object.entries(nextQuery).filter(([, value]) => value),
     );
@@ -177,6 +175,17 @@ export default function App() {
           ?.scrollIntoView({ behavior: "smooth" }),
       30,
     );
+  };
+
+  const search = (event) => {
+    event.preventDefault();
+    submitSearch({ ...searchValues });
+  };
+
+  const searchDestination = (location) => {
+    const nextQuery = { ...searchValues, location };
+    setSearchValues(nextQuery);
+    submitSearch(nextQuery);
   };
 
   const logout = async () => {
@@ -267,6 +276,7 @@ export default function App() {
         loading={loading}
         error={error}
         onSearch={search}
+        onDestination={searchDestination}
         onNavigate={navigate}
       />
     </>

@@ -161,13 +161,19 @@ async def test_public_hotel_reviews_and_private_my_list(
     body = public.json()
     assert body["total"] == 2
     assert body["items"][0]["id"] == second.json()["id"]
+    assert body["items"][0]["author_first_name"] == "Иван"
     assert set(body["items"][0]) == {
         "id",
         "rating",
         "comment",
         "created_at",
         "updated_at",
+        "author_first_name",
     }
+    next_page = await anonymous_client.get(
+        f"/hotels/{clean_database['hotel_id']}/reviews?page=2&per_page=1"
+    )
+    assert next_page.json()["items"][0]["author_first_name"] == "Анна"
     mine = await client.get("/reviews/me")
     assert [item["id"] for item in mine.json()] == [first.json()["id"]]
     assert (await anonymous_client.get("/hotels/999999/reviews")).status_code == 404

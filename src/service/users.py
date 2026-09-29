@@ -80,9 +80,7 @@ class UserService(BaseService):
 
     async def _edit(self, user_id: int, data: UserPatch):
         try:
-            user = await self.db.users.edit(
-                data=data, id=user_id, exclude_unset=True
-            )
+            user = await self.db.users.edit(data=data, id=user_id, exclude_unset=True)
         except ObjectAlreadyExistException as ex:
             raise UserAlreadyExistsException from ex
         except ObjectNotFoundException as ex:

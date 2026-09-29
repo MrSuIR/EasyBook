@@ -1,0 +1,239 @@
+.travel-inspiration {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  scroll-margin-top: 96px;
+  background: #146d7b;
+  padding: 88px max(24px, calc((100% - 1140px) / 2)) 64px;
+}
+
+.travel-background,
+.travel-overlay {
+  position: absolute;
+  pointer-events: none;
+}
+
+.travel-background {
+  inset: -100px 0;
+  background: url("/images/travel-background-4k.jpg") center 65% / cover no-repeat;
+}
+
+.travel-overlay {
+  inset: 0;
+  background: rgb(4 38 49 / 42%);
+}
+
+.travel-content {
+  position: relative;
+}
+
+.travel-heading {
+  margin-bottom: 38px;
+  color: #fff;
+}
+
+.travel-heading .eyebrow {
+  color: #fff;
+}
+
+.travel-heading h2 {
+  margin: 0;
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 1.12;
+  letter-spacing: -2px;
+}
+
+.travel-heading > p:last-child {
+  margin: 18px 0 0;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.travel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.travel-card {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 460px;
+  padding: 26px;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 20px;
+  background: #193e3c;
+  color: #fff;
+}
+
+.travel-card-image,
+.travel-card-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.travel-card-image {
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.travel-card-shade {
+  background: linear-gradient(180deg, rgb(5 19 25 / 35%) 0%, rgb(5 19 25 / 5%) 25%, rgb(5 19 25 / 82%) 70%, #07191f 100%);
+}
+
+.travel-card-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.travel-card-copy {
+  margin-top: 90px;
+}
+
+.travel-card h3 {
+  margin: 0;
+  max-width: 270px;
+  font-size: clamp(28px, 2.6vw, 34px);
+  line-height: 1.08;
+  letter-spacing: -1.1px;
+}
+
+.travel-card-copy > p {
+  min-height: 49px;
+  margin: 16px 0 24px;
+  color: #e1e9e9;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.travel-destinations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 96px;
+  align-content: flex-end;
+  align-items: flex-end;
+}
+
+.travel-destinations button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid rgb(255 255 255 / 45%);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.travel-destinations button:hover {
+  background: #fff;
+  color: #17233d;
+}
+
+.travel-destinations button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+:root[data-theme="dark"] .travel-overlay {
+  background: rgb(4 22 32 / 62%);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .travel-card:hover .travel-card-image {
+    transform: scale(1.045);
+  }
+}
+
+@media (max-width: 1000px) {
+  .travel-card {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .travel-inspiration {
+    padding: 56px 24px 40px;
+  }
+
+  .travel-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .travel-heading h2 {
+    letter-spacing: -1.2px;
+  }
+
+  .travel-card {
+    min-height: 410px;
+  }
+
+  .travel-destinations {
+    min-height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .travel-background {
+    transform: none !important;
+  }
+
+  .travel-card-image,
+  .travel-destinations button {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .travel-inspiration {
+    background: Canvas;
+  }
+
+  .travel-background,
+  .travel-overlay,
+  .travel-card-image,
+  .travel-card-shade {
+    display: none;
+  }
+
+  .travel-heading,
+  .travel-heading .eyebrow {
+    color: CanvasText;
+  }
+
+  .travel-destinations button {
+    border-color: ButtonText;
+  }
+
+  .travel-card {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .travel-card-copy > p {
+    color: CanvasText;
+  }
+}

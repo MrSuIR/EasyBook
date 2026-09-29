@@ -57,7 +57,7 @@ class ReviewAdd(BaseModel):
     comment: str
 
 
-class ReviewPublic(BaseModel):
+class ReviewFields(BaseModel):
     id: int
     rating: int
     comment: str
@@ -65,5 +65,9 @@ class ReviewPublic(BaseModel):
     updated_at: datetime
 
 
-class Review(ReviewPublic):
+class ReviewPublic(ReviewFields):
+    author_first_name: str
+
+
+class Review(ReviewFields):
     booking_id: int

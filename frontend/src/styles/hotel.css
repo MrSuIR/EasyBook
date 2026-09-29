@@ -387,6 +387,15 @@
   font-size: 13px;
   line-height: 1.65;
 }
+.hotel-review-author {
+  display: block;
+  margin-top: 16px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.hotel-review-author + p {
+  margin-top: 8px;
+}
 .hotel-details-state {
   min-height: calc(100vh - 82px);
   display: flex;

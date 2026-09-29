@@ -7,6 +7,63 @@ import {
   localDateKey,
 } from "./accountBookings.js";
 import { addLocalDays } from "./dateUtils.js";
+import { loadGuestImpressions } from "./guestImpressions.js";
+
+test("guest impressions keep hotel links and select recent public reviews without filtering ratings", async () => {
+  const originalFetch = globalThis.fetch;
+  const controller = new AbortController();
+  const calls = [];
+  const hotels = [1, 2, 3, 4].map((id) => ({ id, title: `Отель ${id}` }));
+  globalThis.fetch = async (url, options) => {
+    calls.push({ url, options });
+    const id = Number(url.match(/hotels\/(\d+)/)[1]);
+    return Response.json({ items: [{ id: id + 10, rating: id, comment: `Отзыв ${id}`, created_at: `2026-09-0${id}T12:00:00Z` }] });
+  };
+  try {
+    const result = await loadGuestImpressions(hotels, { signal: controller.signal });
+    assert.equal(result.partialError, false);
+    assert.deepEqual(result.items.map(({ hotel, review }) => [hotel.id, review.id, review.rating]), [[4, 14, 4], [3, 13, 3], [2, 12, 2], [1, 11, 1]]);
+    assert.ok(calls.every(({ url, options }) => url.endsWith("/reviews?page=1&per_page=1&sort_by=created_at&sort_order=desc") && options.signal === controller.signal));
+  } finally { globalThis.fetch = originalFetch; }
+});
+
+test("guest impressions retain successful reviews when another hotel fails", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    if (url.includes("/hotels/1/")) return Response.json({ detail: "Ошибка" }, { status: 503 });
+    return Response.json({ items: [{ id: 20, rating: 2, comment: "Не понравилось", created_at: "2026-09-01T12:00:00Z" }] });
+  };
+  try {
+    const result = await loadGuestImpressions([{ id: 1 }, { id: 2 }]);
+    assert.equal(result.partialError, true);
+    assert.equal(result.items.length, 1);
+    assert.equal(result.items[0].review.comment, "Не понравилось");
+    assert.equal(result.items[0].hotel.id, 2);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
+test("guest impressions distinguish unavailable reviews from an empty selection", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => Response.json({ code: "unavailable", detail: "Ошибка" }, { status: 503 });
+    await assert.rejects(loadGuestImpressions([{ id: 1 }]), { status: 503 });
+    assert.deepEqual(await loadGuestImpressions([]), { items: [], partialError: false });
+    globalThis.fetch = async () => Response.json({ items: [] });
+    assert.deepEqual(await loadGuestImpressions([{ id: 1 }]), { items: [], partialError: false });
+  } finally { globalThis.fetch = originalFetch; }
+});
+
+test("guest impressions discard results after their request is cancelled", async () => {
+  const originalFetch = globalThis.fetch;
+  const controller = new AbortController();
+  globalThis.fetch = async () => {
+    controller.abort();
+    return Response.json({ items: [{ id: 10, rating: 5, comment: "Устаревший отзыв", created_at: "2026-09-01T12:00:00Z" }] });
+  };
+  try {
+    await assert.rejects(loadGuestImpressions([{ id: 1 }], { signal: controller.signal }), { name: "AbortError" });
+  } finally { globalThis.fetch = originalFetch; }
+});
 
 test("buildQuery skips empty values and encodes text", () => {
   assert.equal(

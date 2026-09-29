@@ -2,12 +2,12 @@ from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 
 from src.exceptions import ObjectIntegrityException, ObjectNotFoundException
-from src.models import BookingsOrm, ReviewsOrm, RoomsOrm
+from src.models import BookingsOrm, ReviewsOrm, RoomsOrm, UsersOrm
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import ReviewDataMapper
 from src.repositories.utils import sort_expression
 from src.schemas.common import SortOrder
-from src.schemas.reviews import ReviewPatch, ReviewSortBy
+from src.schemas.reviews import ReviewPatch, ReviewPublic, ReviewSortBy
 
 
 class ReviewsRepository(BaseRepository):
@@ -36,9 +36,10 @@ class ReviewsRepository(BaseRepository):
         id_sort = sort_expression(ReviewsOrm.id, sort_order)
 
         query = (
-            select(ReviewsOrm)
+            select(ReviewsOrm, UsersOrm.first_name)
             .join(BookingsOrm, BookingsOrm.id == ReviewsOrm.booking_id)
             .join(RoomsOrm, RoomsOrm.id == BookingsOrm.room_id)
+            .join(UsersOrm, UsersOrm.id == BookingsOrm.user_id)
             .where(hotel_filter)
             .order_by(primary_sort, id_sort)
             .limit(limit)
@@ -50,9 +51,15 @@ class ReviewsRepository(BaseRepository):
             .join(RoomsOrm, RoomsOrm.id == BookingsOrm.room_id)
             .where(hotel_filter)
         )
-        items = (await self.session.execute(query)).scalars().all()
+        items = (await self.session.execute(query)).all()
         total = (await self.session.execute(count_query)).scalar_one()
-        return [self.mapper.map_to_domain_entity(item) for item in items], total
+        return [
+            ReviewPublic(
+                **self.mapper.map_to_domain_entity(item).model_dump(exclude={"booking_id"}),
+                author_first_name=first_name,
+            )
+            for item, first_name in items
+        ], total
 
     async def edit_review(self, review_id: int, data: ReviewPatch):
         values = data.model_dump(exclude_unset=True)

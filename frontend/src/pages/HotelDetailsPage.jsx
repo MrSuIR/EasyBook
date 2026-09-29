@@ -103,7 +103,7 @@ function Footer({ onNavigate }) {
           Личный кабинет
         </button>
       </nav>
-      <small>© 2026 EasyBook. Курсовой проект по базам данных.</small>
+      <small>© 2026 EasyBook.</small>
     </footer>
   );
 }
@@ -415,8 +415,8 @@ export default function HotelDetailsPage({
               onChange={(event) => setReviewSort(event.target.value)}
             >
               <option value="created_at:desc">Сначала новые</option>
-              <option value="rating:desc">Сначала высокие оценки</option>
-              <option value="rating:asc">Сначала низкие оценки</option>
+              <option value="rating:desc">Высокие оценки</option>
+              <option value="rating:asc">Низкие оценки</option>
             </select>
           </header>
           {reviews.length > 0 && (
@@ -424,15 +424,16 @@ export default function HotelDetailsPage({
               {reviews.map((review) => (
                 <article key={review.id}>
                   <div>
-                    <span>
+                    <span role="img" aria-label={`Оценка ${review.rating} из 5`}>
                       {Array.from({ length: 5 }, (_, index) => (
                         <Star
                           key={index}
                           className={index < review.rating ? "filled" : ""}
+                          aria-hidden="true"
                         />
                       ))}
                     </span>
-                    <time>
+                    <time dateTime={review.created_at}>
                       {new Intl.DateTimeFormat("ru-RU", {
                         day: "numeric",
                         month: "long",
@@ -440,6 +441,7 @@ export default function HotelDetailsPage({
                       }).format(new Date(review.created_at))}
                     </time>
                   </div>
+                  <strong className="hotel-review-author">{review.author_first_name || "Гость отеля"}</strong>
                   <p>{review.comment}</p>
                 </article>
               ))}
