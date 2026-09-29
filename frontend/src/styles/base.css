@@ -219,15 +219,6 @@ main {
   position: relative;
   isolation: isolate;
 }
-:root[data-theme="dark"] #top {
-  background-color: #111925;
-  background-image: repeating-radial-gradient(
-    ellipse 680px 720px at 50% 300px,
-    transparent 0 47px,
-    rgba(144, 169, 218, 0.055) 47.5px 48px,
-    transparent 48.5px 72px
-  );
-}
 #top > section {
   position: relative;
   z-index: 1;
@@ -247,82 +238,12 @@ main {
   grid-template-columns: 0.86fr 1.14fr;
   align-items: center;
   gap: 92px;
-  background: #fbfdff;
-}
-.hero-background {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 31% 56% at 88% 20%, rgba(111, 165, 255, 0.035), transparent 74%),
-    linear-gradient(180deg, #ffffff 0%, #fbfdff 64%, #f8fbff 100%);
+  background: transparent;
 }
 .hero-copy,
 .hero-visual {
   position: relative;
   z-index: 1;
-}
-.hero-blob {
-  position: absolute;
-  display: block;
-  pointer-events: none;
-}
-.hero-blob--right {
-  top: -184px;
-  right: -128px;
-  width: 500px;
-  height: 420px;
-  border-radius: 47% 43% 49% 45%;
-  background: radial-gradient(ellipse at 48% 55%, rgba(84, 143, 251, 0.07) 0%, rgba(104, 157, 255, 0.04) 48%, rgba(111, 170, 255, 0.012) 67%, transparent 79%);
-  transform: rotate(-34deg);
-}
-.hero-blob--middle {
-  top: 108px;
-  left: 41.5%;
-  width: 276px;
-  height: 172px;
-  border-radius: 48% 43% 46% 42%;
-  background: radial-gradient(ellipse at center, rgba(82, 144, 255, 0.047) 0%, rgba(92, 151, 255, 0.026) 55%, transparent 78%);
-  transform: rotate(-9deg);
-}
-.hero-blob--left {
-  bottom: -164px;
-  left: -136px;
-  width: 385px;
-  height: 305px;
-  border-radius: 44% 52% 42% 50%;
-  background: radial-gradient(ellipse at 66% 27%, rgba(102, 159, 255, 0.045), rgba(120, 174, 255, 0.016) 49%, transparent 76%);
-  transform: rotate(24deg);
-}
-.hero-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.hero-lines path {
-  fill: none;
-  stroke: rgba(66, 103, 176, 0.075);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-:root[data-theme="dark"] .hero {
-  background: transparent;
-}
-:root[data-theme="dark"] .hero-background {
-  background: transparent;
-}
-:root[data-theme="dark"] .hero-blob--right {
-  opacity: 0.52;
-}
-:root[data-theme="dark"] .hero-blob--middle,
-:root[data-theme="dark"] .hero-blob--left {
-  opacity: 0.4;
-}
-:root[data-theme="dark"] .hero-lines path {
-  stroke: rgba(144, 169, 218, 0.08);
 }
 .eyebrow {
   margin: 0 0 16px;

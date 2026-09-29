@@ -113,9 +113,9 @@ export default function SiteHeader({
         document.documentElement.scrollHeight - 8;
       const catalogTop =
         document.getElementById("catalog")?.offsetTop ?? Infinity;
-      const footerTop =
-        document.getElementById("footer")?.offsetTop ?? Infinity;
-      if (reachedPageEnd || marker >= footerTop) setActiveSection("footer");
+      const reviewsTop =
+        document.getElementById("reviews")?.offsetTop ?? Infinity;
+      if (reachedPageEnd || marker >= reviewsTop) setActiveSection("reviews");
       else if (marker >= catalogTop) setActiveSection("catalog");
       else setActiveSection("home");
     };
@@ -177,11 +177,11 @@ export default function SiteHeader({
           Отели
         </a>
         <a
-          className={activeSection === "footer" && !page ? "active" : ""}
-          href="/#footer"
-          onClick={(event) => navigateToSection(event, "footer")}
+          className={activeSection === "reviews" && !page ? "active" : ""}
+          href="/#reviews"
+          onClick={(event) => navigateToSection(event, "reviews")}
         >
-          Контакты
+          Отзывы
         </a>
       </nav>
       <div className="header-actions">

@@ -1,0 +1,302 @@
+.guest-impressions {
+  scroll-margin-top: 96px;
+  padding: 100px 24px 92px;
+  background: var(--page-alt);
+  color: var(--ink);
+}
+
+.impressions-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.impressions-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 44px;
+}
+
+.impressions-heading h2 {
+  margin: 0;
+  font-size: clamp(36px, 4vw, 52px);
+  line-height: 1.08;
+  letter-spacing: -2px;
+}
+
+.impressions-grid {
+  display: flex;
+  gap: 18px;
+  align-items: stretch;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  border-radius: 18px;
+}
+
+.impressions-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.impressions-grid:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 5px;
+}
+
+.impressions-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.impressions-arrows {
+  display: flex;
+  gap: 10px;
+}
+
+.impressions-arrows button {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.impressions-arrows button:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.impressions-arrows button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.impression-card {
+  flex: 0 0 calc((100% - 36px) / 3);
+  min-width: 0;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  min-height: 370px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.impression-card:first-child {
+  --impression-muted: #b7c7ca;
+  border-color: #17373c;
+  background: #17373c;
+  color: #fff;
+}
+
+.impression-rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.impression-rating > span {
+  display: flex;
+  gap: 3px;
+  color: var(--coral);
+}
+
+.impression-rating time {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--impression-muted, var(--muted));
+}
+
+.impression-quote-icon {
+  margin-top: 24px;
+  color: var(--coral);
+}
+
+.impression-card blockquote {
+  margin: 14px 0 26px;
+}
+
+.impression-card blockquote p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.5px;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.impression-card blockquote.expanded p {
+  display: block;
+}
+
+.impression-expand {
+  align-self: flex-start;
+  margin: -10px 0 22px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.impression-author {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: auto;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.impression-author span {
+  font-weight: 700;
+}
+
+.impression-hotel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.impression-card:first-child .impression-hotel {
+  border-color: rgb(255 255 255 / 18%);
+}
+
+.impression-hotel img {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  object-fit: cover;
+}
+
+.impression-hotel > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.impression-hotel strong,
+.impression-hotel small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.impression-hotel strong {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.impression-hotel small {
+  margin-top: 4px;
+  color: var(--impression-muted, var(--muted));
+  font-size: 11px;
+}
+
+.impression-hotel > svg {
+  flex-shrink: 0;
+}
+
+.impression-hotel:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.impression-card:first-child a:focus-visible,
+.impression-card:first-child button:focus-visible {
+  outline-color: #fff;
+}
+
+.impressions-bottom {
+  margin-top: 26px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.impressions-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.impressions-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 14px;
+  min-height: 260px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.impressions-state p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.impressions-state a,
+.impressions-state button,
+.impressions-bottom button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 1000px) {
+  .impression-card { padding: 22px; }
+  .impression-card blockquote p { font-size: 19px; }
+}
+
+@media (min-width: 721px) and (max-width: 1000px) {
+  .impression-card { flex-basis: calc((100% - 18px) / 2); }
+}
+
+@media (max-width: 720px) {
+  .guest-impressions { padding: 64px 24px 56px; }
+  .impressions-heading { align-items: flex-start; flex-direction: column; gap: 20px; margin-bottom: 32px; }
+  .impressions-heading h2 { letter-spacing: -1.2px; }
+  .impressions-grid { gap: 14px; }
+  .impression-card { flex-basis: 100%; min-height: 320px; padding: 26px; }
+  .impression-card blockquote p { font-size: 21px; }
+}
+
+@media (forced-colors: active) {
+  .impression-card:first-child { background: Canvas; color: CanvasText; border-color: CanvasText; }
+  .impression-card:first-child .impression-hotel { border-color: CanvasText; }
+  .impression-card:first-child .impression-hotel small,
+  .impression-card:first-child .impression-rating time { color: CanvasText; }
+}

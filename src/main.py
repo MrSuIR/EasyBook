@@ -73,11 +73,6 @@ async def easybook_exception_handler(_, exc: EasyBookException):
     )
 
 
-@app.get("/health/live", include_in_schema=False)
-async def health_live():
-    return {"status": "ok"}
-
-
 @app.get("/health/ready", include_in_schema=False)
 async def health_ready():
     async with engine.connect() as connection:

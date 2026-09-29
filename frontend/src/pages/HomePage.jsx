@@ -11,6 +11,8 @@ import {
 import { api } from "../api.js";
 import { localDateKey } from "../dateUtils.js";
 import { formatPrice } from "../utils/formatters.js";
+import TravelInspiration from "../components/TravelInspiration.jsx";
+import GuestImpressions from "../components/GuestImpressions.jsx";
 
 const hotelFallback = "/images/hotel-fallback.jpg";
 
@@ -236,26 +238,6 @@ function Catalog({ hotels, loading, error, dates }) {
   );
 }
 
-function HeroBackground() {
-  return (
-    <div className="hero-background" aria-hidden="true">
-      <span className="hero-blob hero-blob--right" />
-      <span className="hero-blob hero-blob--middle" />
-      <span className="hero-blob hero-blob--left" />
-      <svg
-        className="hero-lines"
-        viewBox="0 0 1440 570"
-        preserveAspectRatio="none"
-      >
-        <path d="M-138 410C-18 344 91 398 176 489C218 534 270 566 344 589" />
-        <path d="M1018 -76C1106 28 1240 66 1506 -18" />
-        <path d="M1468 104C1318 180 1288 322 1486 447" />
-        <path d="M615 36C548 92 537 176 593 231C616 254 646 271 681 280" />
-      </svg>
-    </div>
-  );
-}
-
 export default function HomePage({
   user,
   values,
@@ -265,13 +247,13 @@ export default function HomePage({
   loading,
   error,
   onSearch,
+  onDestination,
   onNavigate,
 }) {
   return (
     <>
       <main id="top">
         <section className="hero">
-          <HeroBackground />
           <div className="hero-copy">
             <h1>
               Забудьте о суете.
@@ -326,6 +308,8 @@ export default function HomePage({
             dates={query}
           />
         </section>
+        <TravelInspiration onDestination={onDestination} />
+        <GuestImpressions hotels={hotels} dates={query} catalogLoading={loading} catalogError={error} />
       </main>
       <footer id="footer">
         <a className="brand" href="#top">
@@ -341,7 +325,7 @@ export default function HomePage({
             Личный кабинет
           </button>
         </nav>
-        <small>© 2026 EasyBook. Курсовой проект по базам данных.</small>
+        <small>© 2026 EasyBook.</small>
       </footer>
     </>
   );
