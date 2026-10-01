@@ -143,7 +143,6 @@ export const api = {
       request("/analytics/hotels", { ...options, query }),
   },
   health: {
-    live: (options) => request("/health/live", options),
     ready: (options) => request("/health/ready", options),
   },
   locations: {
