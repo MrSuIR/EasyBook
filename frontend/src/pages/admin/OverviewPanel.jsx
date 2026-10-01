@@ -17,13 +17,12 @@ export default function OverviewPanel() {
   const load = useCallback(async () => {
     setState((current) => ({ ...current, loading: true, error: "" }));
     try {
-      const [hotels, bookings, users, analytics, live, ready] =
+      const [hotels, bookings, users, analytics, ready] =
         await Promise.all([
           api.hotels.adminList({ page: 1, per_page: 1 }),
           api.bookings.list({ page: 1, per_page: 1 }),
           api.users.list({ page: 1, per_page: 1 }),
           loadAllPages((page) => api.analytics.hotels({ page, per_page: 100 })),
-          api.health.live(),
           api.health.ready(),
         ]);
       const revenue = analytics.items.reduce(
@@ -38,7 +37,6 @@ export default function OverviewPanel() {
           bookings: bookings.total,
           users: users.total,
           revenue,
-          live: live.status,
           ready: ready.status,
         },
       });
@@ -90,9 +88,7 @@ export default function OverviewPanel() {
           <article className="admin-health">
             <CheckCircle2 />
             <span>API / БД</span>
-            <strong>
-              {state.stats.live} / {state.stats.ready}
-            </strong>
+            <strong>{state.stats.ready}</strong>
           </article>
         </div>
       )}
